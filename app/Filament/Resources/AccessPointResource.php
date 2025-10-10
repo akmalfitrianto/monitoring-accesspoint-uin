@@ -1,0 +1,116 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\AccessPointResource\Pages;
+use App\Filament\Resources\AccessPointResource\RelationManagers;
+use App\Models\AccessPoint;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+
+class AccessPointResource extends Resource
+{
+    protected static ?string $model = AccessPoint::class;
+
+    protected static ?string $navigationIcon = 'heroicon-o-wifi';
+    protected static ?string $navigationLabel = 'Access Point';
+    protected static ?string $navigationGroup = 'Manajemen Jaringan';
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Forms\Components\Select::make('building_id')
+                    ->label('Gedung')
+                    ->relationship('building', 'name')
+                    ->required()
+                    ->searchable(),
+                Forms\Components\TextInput::make('name')
+                    ->label('Nama AP')
+                    ->required()
+                    ->maxLength(100),
+                Forms\Components\TextInput::make('mac_address')
+                    ->label('Mac Address')
+                    ->required()
+                    ->unique(ignoreRecord: true)
+                    ->maxLength(50),
+                Forms\Components\Grid::make(2)
+                    ->schema([
+                        Forms\Components\TextInput::make('x_position')
+                            ->numeric()
+                            ->label('posisi X')
+                            ->default(0)
+                            ->required(),
+
+                        Forms\Components\TextInput::make('y_position')
+                            ->numeric()
+                            ->label('posisi Y')
+                            ->default(0)
+                            ->required(),
+                    ]),
+                Forms\Components\TextInput::make('signal_strength')
+                    ->numeric()
+                    ->label('Kekuatan Sinyal (dBm)')
+                    ->default(-60),
+
+                Forms\Components\Select::make('status')
+                    ->label('Status')
+                    ->options([
+                        'active' => 'Aktif',
+                        'offline' => 'Offline',
+                        'maintenance' => 'Perawatan',
+                    ])
+                    ->default('active')
+                    ->required(),
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('name')->label('Nama AP')->searchable(),
+                Tables\Columns\TextColumn::make('mac_address')->label('MAC Address'),
+                Tables\Columns\TextColumn::make('building.name')->label('Gedung'),
+                Tables\Columns\TextColumn::make('signal_strength')->label('Sinyal (dBm)'),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->label('Status')
+                    ->colors([
+                        'success' => 'active',
+                        'warning' => 'maintenance',
+                        'danger' => 'offline',
+                    ])
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListAccessPoints::route('/'),
+            'create' => Pages\CreateAccessPoint::route('/create'),
+            'edit' => Pages\EditAccessPoint::route('/{record}/edit'),
+        ];
+    }
+}
