@@ -50,6 +50,20 @@ class BuildingResource extends Resource
                             ->label('Tinggi Grid')
                             ->default(10)
                             ->required(),
+                    ]),
+                Forms\Components\Grid::make(2)
+                    ->schema([
+                        Forms\Components\TextInput::make('x_position')
+                            ->numeric()
+                            ->label('Posisi X')
+                            ->default(0)
+                            ->required(),
+
+                        Forms\Components\TextInput::make('y_position')
+                            ->numeric()
+                            ->label('Posisi Y')
+                            ->default(0)
+                            ->required(),
                     ])
             ]);
     }
@@ -62,6 +76,8 @@ class BuildingResource extends Resource
                 Tables\Columns\TextColumn::make('code')->label('Kode Gedung'),
                 Tables\Columns\TextColumn::make('grid_width')->label('Lebar'),
                 Tables\Columns\TextColumn::make('grid_height')->label('Tinggi'),
+                Tables\Columns\TextColumn::make('x_position')->label('X'),
+                Tables\Columns\TextColumn::make('y_position')->label('Y'),
                 Tables\Columns\TextColumn::make('access_points_count')
                     ->label('Jumlah AP')
                     ->counts('accessPoints'),

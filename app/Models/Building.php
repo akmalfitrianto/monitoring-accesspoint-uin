@@ -10,7 +10,7 @@ class Building extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'code', 'description', 'grid_width', 'grid_height'
+        'name', 'code', 'description', 'grid_width', 'grid_height', 'x_position','y_position'
     ];
 
     public function accessPoints(){
