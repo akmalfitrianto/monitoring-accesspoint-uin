@@ -29,11 +29,20 @@ class AccessPointResource extends Resource
                     ->label('Gedung')
                     ->relationship('building', 'name')
                     ->required()
+                    ->preload()
                     ->searchable(),
                 Forms\Components\Select::make('room_id')
                     ->label('Ruangan')
-                    ->relationship('room', 'name')
+                    ->options(function (callable $get) {
+                        $buildingId = $get('building_id');
+                        if (!$buildingId) {
+                            return[];
+                        }
+                        return \App\Models\Room::where('building_id', $buildingId)
+                            ->pluck('name','id');
+                    })
                     ->required()
+                    ->reactive()
                     ->searchable(),
                 Forms\Components\TextInput::make('name')
                     ->label('Nama AP')
@@ -81,7 +90,7 @@ class AccessPointResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('Nama AP')->searchable(),
                 Tables\Columns\TextColumn::make('mac_address')->label('MAC Address'),
-                Tables\Columns\TextColumn::make('building.name')->label('Gedung')->searchable(),
+                Tables\Columns\TextColumn::make('building.name')->label('Gedung')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('room.name')->label('Ruangan')->searchable(),
                 Tables\Columns\TextColumn::make('signal_strength')->label('Sinyal (dBm)'),
                 Tables\Columns\TextColumn::make('status')
@@ -91,7 +100,9 @@ class AccessPointResource extends Resource
                         'success' => 'active',
                         'warning' => 'maintenance',
                         'danger' => 'offline',
-                    ])
+                    ]),
+                Tables\Columns\TextColumn::make('x_position')->label('X'),
+                Tables\Columns\TextColumn::make('y_position')->label('Y'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

@@ -81,6 +81,9 @@ class BuildingResource extends Resource
                 Tables\Columns\TextColumn::make('access_points_count')
                     ->label('Jumlah AP')
                     ->counts('accessPoints'),
+                Tables\Columns\TextColumn::make('rooms_count')
+                    ->label('Jumlah Ruangan')
+                    ->counts('rooms'),
             ])
             ->filters([
                 //

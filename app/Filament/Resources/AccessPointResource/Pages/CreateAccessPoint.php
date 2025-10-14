@@ -4,6 +4,7 @@ namespace App\Filament\Resources\AccessPointResource\Pages;
 
 use App\Filament\Resources\AccessPointResource;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateAccessPoint extends CreateRecord
@@ -14,5 +15,12 @@ class CreateAccessPoint extends CreateRecord
     {
         // redirect ke halaman index setelah berhasil create
         return $this->getResource()::getUrl('index');
+    }
+
+    protected function getCreatedNotification(): ?Notification
+    {
+        return Notification::make()
+            ->title('Data Access Point berhasil ditambahkan')
+            ->success();
     }
 }

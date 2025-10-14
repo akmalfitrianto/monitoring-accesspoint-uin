@@ -29,8 +29,8 @@ class RoomResource extends Resource
                     ->label('Gedung')
                     ->relationship('building', 'name')
                     ->required()
+                    ->preload()
                     ->searchable(),
-
                 Forms\Components\TextInput::make('name')
                     ->label('Nama Ruangan')
                     ->required(),

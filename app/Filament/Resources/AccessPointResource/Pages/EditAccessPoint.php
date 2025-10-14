@@ -4,16 +4,24 @@ namespace App\Filament\Resources\AccessPointResource\Pages;
 
 use App\Filament\Resources\AccessPointResource;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
 class EditAccessPoint extends EditRecord
 {
     protected static string $resource = AccessPointResource::class;
 
-    protected function getHeaderActions(): array
+    protected function getRedirectUrl(): string
     {
-        return [
-            Actions\DeleteAction::make(),
-        ];
+        return $this->getResource()::getUrl('index');
     }
+
+    protected function getSavedNotification(): ?Notification
+    {
+        return Notification::make()
+            ->title('Data Access Point berhasil diperbarui')
+            ->success();
+    }
+
+
 }
