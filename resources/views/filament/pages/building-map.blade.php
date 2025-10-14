@@ -72,9 +72,10 @@
                 {{-- Buildings Markers --}}
                 @foreach ($this->buildings as $building)
                     @php
-                        // Konversi dari koordinat integer ke persentase (0-100)
-                        $xPos = max(5, min(95, ($building->x_position / 10) ?? 50));
-                        $yPos = max(5, min(95, ($building->y_position / 10) ?? 50));
+                        $xPos = max(0, min(100, $building->x_position ?? 50));
+                        $yPos = max(0, min(100, $building->y_position ?? 50));
+                        $width = $building->width ?? 100;
+                        $height = $building->height ?? 80;
                     @endphp
 
                     <div
@@ -84,54 +85,31 @@
                             code: '{{ $building->code }}',
                             access_points_count: '{{ $building->access_points_count }}',
                         })"
-                        class="absolute group cursor-pointer transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 hover:scale-110 hover:z-50"
-                        style="left: {{ number_format($xPos, 2) }}%; top: {{ number_format($yPos, 2) }}%;"
+                        class="absolute flex flex-col items-center justify-center rounded-lg shadow-md cursor-pointer transition-all hover:scale-105 hover:shadow-xl"
+                        style="
+                            left: {{ $xPos }}%;
+                            top: {{ $yPos }}%;
+                            width: {{ $width }}px;
+                            height: {{ $height }}px;
+                            background: #fde68a;
+                            border: 2px solid #d97706;
+                            color: #78350f;
+                            font-weight: 700;
+                            font-size: 13px;
+                            transform: translate(-50%, -50%);
+                        "
                         title="{{ $building->name }}"
                     >
-                        {{-- Pin marker dengan shadow --}}
-                        <div class="relative">
-                            {{-- Shadow/glow effect --}}
-                            <div class="absolute inset-0 rounded-lg blur-sm scale-110" 
-                                 style="background: #fbbf24; opacity: 0.4;"></div>
-                            
-                            {{-- Main building card --}}
-                            <div class="relative rounded-lg shadow-lg border-2" 
-                                 style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); 
-                                        color: #1f2937; 
-                                        font-weight: 700; 
-                                        padding: 12px 16px; 
-                                        min-width: 120px; 
-                                        text-align: center;
-                                        border-color: #d97706;">
-                                <div style="font-size: 20px; line-height: 1.2;">{{ $building->code }}</div>
-                                <div style="font-size: 11px; font-weight: 400; opacity: 0.9; margin-top: 4px;">
-                                    {{ $building->access_points_count }} AP
-                                </div>
-                            </div>
+                        <div>{{ $building->code }}</div>
+                        <div style="font-size: 11px; font-weight: 500;">{{ $building->access_points_count }} AP</div>
 
-                            {{-- Pointer/arrow --}}
-                            <div class="absolute left-1/2 top-full" 
-                                 style="width: 0; height: 0; 
-                                        border-left: 8px solid transparent; 
-                                        border-right: 8px solid transparent; 
-                                        border-top: 8px solid #d97706;
-                                        transform: translateX(-50%);"></div>
-                        </div>
-
-                        {{-- Hover tooltip --}}
-                        <div class="absolute left-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
-                             style="transform: translate(-50%, 0); top: -64px;">
+                        {{-- Tooltip muncul saat hover --}}
+                        <div class="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
+                            style="bottom: 100%; left: 50%; transform: translate(-50%, -8px);">
                             <div class="rounded-lg shadow-xl text-xs whitespace-nowrap"
-                                 style="background: #1f2937; color: white; padding: 8px 12px;">
-                                <div style="font-weight: 600; margin-bottom: 2px;">{{ $building->name }}</div>
-                                <div style="color: #d1d5db; font-size: 10px;">Klik untuk detail</div>
+                                style="background: #1f2937; color: white; padding: 6px 10px;">
+                                {{ $building->name }}
                             </div>
-                            <div class="absolute left-1/2 top-full"
-                                 style="width: 0; height: 0; 
-                                        border-left: 4px solid transparent; 
-                                        border-right: 4px solid transparent; 
-                                        border-top: 4px solid #1f2937;
-                                        transform: translateX(-50%);"></div>
                         </div>
                     </div>
                 @endforeach
@@ -163,8 +141,8 @@
                 </div>
 
                 {{-- Info panel --}}
-                <div class="absolute top-4 right-4 rounded-lg shadow-lg z-10"
-                     style="background: rgba(255,255,255,0.95); padding: 16px; backdrop-filter: blur(4px);">
+                <div class="absolute top-8 right-8 rounded-lg shadow-lg z-10"
+                     style="background: rgba(255,255,255,0.95); padding: 16px; backdrop-filter: blur(4px); transform: translateX(640%);">
                     <div style="font-size: 13px; color: #6b7280;">
                         <div style="font-weight: 700; margin-bottom: 8px; color: #111827;">Informasi:</div>
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
@@ -183,11 +161,11 @@
                 </div>
 
                 {{-- Debug info (hapus setelah berhasil) --}}
-                <div class="absolute bottom-4 left-4 rounded text-xs" 
+                {{-- <div class="absolute bottom-4 left-4 rounded text-xs" 
                      style="background: rgba(0,0,0,0.7); color: white; padding: 8px;">
                     <div x-text="'Rooms: ' + rooms.length"></div>
                     <div x-text="'APs: ' + accessPoints.length"></div>
-                </div>
+                </div> --}}
 
                 {{-- Rooms --}}
                 <template x-for="room in rooms" :key="room.id">
