@@ -14,7 +14,7 @@ class Building extends Model
     ];
 
     public function accessPoints(){
-        return $this-> hasMany(AccessPoint::class, 'building_id'); 
+        return $this-> hasMany(AccessPoint::class); 
     }
 
     public function rooms(){

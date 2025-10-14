@@ -20,6 +20,6 @@ class Room extends Model
 
     public function accessPoints()
     {
-        return $this->hasMany(AccessPoint::class, 'room_id');
+        return $this->hasMany(AccessPoint::class);
     }
 }

@@ -30,6 +30,11 @@ class AccessPointResource extends Resource
                     ->relationship('building', 'name')
                     ->required()
                     ->searchable(),
+                Forms\Components\Select::make('room_id')
+                    ->label('Ruangan')
+                    ->relationship('room', 'name')
+                    ->required()
+                    ->searchable(),
                 Forms\Components\TextInput::make('name')
                     ->label('Nama AP')
                     ->required()
@@ -76,7 +81,8 @@ class AccessPointResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('Nama AP')->searchable(),
                 Tables\Columns\TextColumn::make('mac_address')->label('MAC Address'),
-                Tables\Columns\TextColumn::make('building.name')->label('Gedung'),
+                Tables\Columns\TextColumn::make('building.name')->label('Gedung')->searchable(),
+                Tables\Columns\TextColumn::make('room.name')->label('Ruangan')->searchable(),
                 Tables\Columns\TextColumn::make('signal_strength')->label('Sinyal (dBm)'),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
