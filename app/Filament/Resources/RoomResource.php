@@ -31,6 +31,16 @@ class RoomResource extends Resource
                     ->required()
                     ->preload()
                     ->searchable(),
+                Forms\Components\Select::make('floor')
+                    ->label('Lantai')
+                    ->options([
+                        1 => 'Lantai 1',
+                        2 => 'Lantai 2',
+                        3 => 'Lantai 3',
+                        4 => 'Lantai 4',
+                    ])
+                    ->default(1)
+                    ->required(),
                 Forms\Components\TextInput::make('name')
                     ->label('Nama Ruangan')
                     ->required(),
@@ -71,6 +81,9 @@ class RoomResource extends Resource
                     ->label('Gedung')
                     ->sortable()
                     ->searchable(),
+                Tables\Columns\TextColumn::make('floor')
+                    ->label('Lantai')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama Ruangan')
                     ->searchable(),

@@ -31,6 +31,16 @@ class AccessPointResource extends Resource
                     ->required()
                     ->preload()
                     ->searchable(),
+                Forms\Components\Select::make('floor')
+                    ->label('Lantai')
+                    ->options([
+                        1 => 'Lantai 1',
+                        2 => 'Lantai 2',
+                        3 => 'Lantai 3',
+                        4 => 'Lantai 4',
+                    ])
+                    ->default(1)
+                    ->required(),
                 Forms\Components\Select::make('room_id')
                     ->label('Ruangan')
                     ->options(function (callable $get) {
@@ -91,6 +101,7 @@ class AccessPointResource extends Resource
                 Tables\Columns\TextColumn::make('name')->label('Nama AP')->searchable(),
                 Tables\Columns\TextColumn::make('mac_address')->label('MAC Address'),
                 Tables\Columns\TextColumn::make('building.name')->label('Gedung')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('floor')->label('Lantai')->sortable(),
                 Tables\Columns\TextColumn::make('room.name')->label('Ruangan')->searchable(),
                 Tables\Columns\TextColumn::make('signal_strength')->label('Sinyal (dBm)'),
                 Tables\Columns\TextColumn::make('status')

@@ -10,7 +10,7 @@ class AccessPoint extends Model
     use HasFactory;
 
     protected $fillable = [
-        'building_id','room_id', 'name', 'mac_address','x_position','y_position','signal_strength','status'
+        'building_id','room_id', 'name', 'mac_address','x_position','y_position','signal_strength','status', 'floor'
     ];
 
     public function building() {

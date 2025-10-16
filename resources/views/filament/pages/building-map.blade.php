@@ -7,14 +7,28 @@
             buildings: @js($this->buildings),
             rooms: [],
             accessPoints: [],
+            floors: [],
+            currentFloor: 1,
 
             async loadRooms(buildingId) {
                 try {
                     const response = await fetch(`/admin/api/buildings/${buildingId}/rooms`);
                     const data = await response.json();
-                    console.log('Room data:', data); // Debug
+
+                    let maxFloorInData = 1;
+                    data.rooms.forEach(room => {
+                        if (room.floor) maxFloorInData = Math.max(maxFloorInData, room.floor);
+                    });
+                    data.access_points.forEach(ap => {
+                        if (ap.floor) maxFloorInData = Math.max(maxFloorInData, ap.floor);
+                    });
+
+                    const numberOfFloors = Math.max(data.total_floors || 1, maxFloorInData);
+                    this.floors = Array.from({length: numberOfFloors}, (_, i) => i + 1);
+
                     this.rooms = data.rooms || [];
                     this.accessPoints = data.access_points || [];
+                    this.currentFloor = this.floors[0] || 1;
                     this.viewMode = 'rooms';
                 } catch (error) {
                     console.error('Error loading rooms:', error);
@@ -51,9 +65,66 @@
             </h1>
         </div>
 
+        {{-- Floor Pagination (untuk rooms view) --}}
+        <div x-show="viewMode === 'rooms'" style="display: flex; gap: 8px; margin-bottom: 16px; justify-content: center; flex-wrap: wrap;">
+            <template x-for="floor in floors" :key="floor">
+                <button 
+                    x-on:click="currentFloor = floor"
+                    :style="`
+                        background: ${currentFloor === floor ? '#f59e0b' : '#e5e7eb'};
+                        color: ${currentFloor === floor ? 'white' : '#374151'};
+                        padding: 8px 16px;
+                        border-radius: 6px;
+                        font-weight: 600;
+                        font-size: 14px;
+                        cursor: pointer;
+                        border: none;
+                        transition: all 0.2s;
+                    `"
+                    :x-text="`Lantai ${floor}`"
+                    onmouseover="if(this.style.background !== 'rgb(245, 158, 11)') this.style.background='#d1d5db'"
+                    onmouseout="if(this.style.background !== 'rgb(245, 158, 11)') this.style.background='#e5e7eb'"
+                ></button>
+            </template>    
+        </div>
+
         {{-- MODE: DENAH GEDUNG --}}
-        <template x-if="viewMode === 'buildings'">
-            <div class="relative border-4 rounded-xl mx-auto shadow-2xl overflow-hidden"
+<template x-if="viewMode === 'buildings'">
+    <div class="relative mx-auto" style="width: 100%; max-width: 1200px;">
+        
+        {{-- Horizontal Ruler (Top) --}}
+        {{-- <div style="position: relative; display: flex; justify-content: space-between; font-size: 11px; font-family: monospace; color: #6b7280; margin-bottom: 4px; padding-left: 30px; padding-right: 30px; font-weight: 600;">
+            <span style="display: inline-block;">0</span>
+            <span style="display: inline-block;">10</span>
+            <span style="display: inline-block;">20</span>
+            <span style="display: inline-block;">30</span>
+            <span style="display: inline-block;">40</span>
+            <span style="display: inline-block;">50</span>
+            <span style="display: inline-block;">60</span>
+            <span style="display: inline-block;">70</span>
+            <span style="display: inline-block;">80</span>
+            <span style="display: inline-block;">90</span>
+            <span style="display: inline-block;">100</span>
+        </div> --}}
+
+        <div style="display: flex;">
+            {{-- Vertical Ruler (Left) --}}
+            {{-- <div style="display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; font-family: monospace; color: #6b7280; padding-right: 8px; width: 30px; height: 700px; font-weight: 600; text-align: right;">
+                <span style="display: block;">0</span>
+                <span style="display: block;">10</span>
+                <span style="display: block;">20</span>
+                <span style="display: block;">30</span>
+                <span style="display: block;">40</span>
+                <span style="display: block;">50</span>
+                <span style="display: block;">60</span>
+                <span style="display: block;">70</span>
+                <span style="display: block;">80</span>
+                <span style="display: block;">90</span>
+                <span style="display: block;">100</span>
+            </div> --}}
+
+            {{-- Main Canvas --}}
+            <div class="relative border-4 rounded-xl shadow-2xl overflow-hidden"
                  style="width: 100%; max-width: 1200px; height: 700px; background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); border-color: #d1d5db;">
                 
                 {{-- Grid Pattern untuk referensi visual --}}
@@ -74,8 +145,14 @@
                     @php
                         $xPos = max(0, min(100, $building->x_position ?? 50));
                         $yPos = max(0, min(100, $building->y_position ?? 50));
-                        $width = $building->width ?? 100;
-                        $height = $building->height ?? 80;
+                        $width = $building->grid_width ?? 100;
+                        $height = $building->grid_height ?? 80;
+                        
+                        // Hitung font size berdasarkan ukuran gedung
+                        $avgSize = ($width + $height) / 2;
+                        $fontSize = max(9, min(14, $avgSize / 6));
+                        $subFontSize = max(8, $fontSize - 2);
+                        $padding = max(2, min(8, $avgSize / 15));
                     @endphp
 
                     <div
@@ -85,7 +162,7 @@
                             code: '{{ $building->code }}',
                             access_points_count: '{{ $building->access_points_count }}',
                         })"
-                        class="absolute flex flex-col items-center justify-center rounded-lg shadow-md cursor-pointer transition-all hover:scale-105 hover:shadow-xl"
+                        class="absolute flex flex-col items-center justify-center rounded-lg shadow-md cursor-pointer transition-all"
                         style="
                             left: {{ $xPos }}%;
                             top: {{ $yPos }}%;
@@ -95,26 +172,69 @@
                             border: 2px solid #d97706;
                             color: #78350f;
                             font-weight: 700;
-                            font-size: 13px;
+                            font-size: {{ $fontSize }}px;
                             transform: translate(-50%, -50%);
+                            padding: {{ $padding }}px;
+                            box-sizing: border-box;
                         "
                         title="{{ $building->name }}"
+                        onmouseover="this.style.transform='translate(-50%, -50%) scale(1.05)'; this.style.boxShadow='0 10px 15px rgba(0,0,0,0.3)'"
+                        onmouseout="this.style.transform='translate(-50%, -50%) scale(1)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'"
                     >
-                        <div>{{ $building->code }}</div>
-                        <div style="font-size: 11px; font-weight: 500;">{{ $building->access_points_count }} AP</div>
+                        <div style="line-height: 1.2;">{{ $building->code }}</div>
+                        <div style="font-size: {{ $subFontSize }}px; font-weight: 500; line-height: 1.2; margin-top: 2px;">
+                            {{ $building->access_points_count }} AP
+                        </div>
 
                         {{-- Tooltip muncul saat hover --}}
-                        <div class="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
-                            style="bottom: 100%; left: 50%; transform: translate(-50%, -8px);">
+                        <div class="absolute opacity-0 transition-opacity duration-200 pointer-events-none"
+                            style="bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); z-index: 100;"
+                            onmouseenter="this.style.opacity='1'"
+                            onmouseleave="this.style.opacity='0'">
                             <div class="rounded-lg shadow-xl text-xs whitespace-nowrap"
                                 style="background: #1f2937; color: white; padding: 6px 10px;">
                                 {{ $building->name }}
+                                <div style="font-size: 10px; opacity: 0.7; margin-top: 2px;">
+                                    Position: ({{ $xPos }}%, {{ $yPos }}%) | Size: {{ $width }}×{{ $height }}px
+                                </div>
                             </div>
                         </div>
                     </div>
                 @endforeach
             </div>
-        </template>
+
+            {{-- Vertical Ruler (Right) --}}
+            <div style="display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; font-family: monospace; color: #6b7280; padding-left: 8px; width: 30px; height: 700px; font-weight: 600;">
+                <span style="display: block;">0</span>
+                <span style="display: block;">10</span>
+                <span style="display: block;">20</span>
+                <span style="display: block;">30</span>
+                <span style="display: block;">40</span>
+                <span style="display: block;">50</span>
+                <span style="display: block;">60</span>
+                <span style="display: block;">70</span>
+                <span style="display: block;">80</span>
+                <span style="display: block;">90</span>
+                <span style="display: block;">100</span>
+            </div>
+        </div>
+
+        {{-- Horizontal Ruler (Bottom) --}}
+        <div style="position: relative; display: flex; justify-content: space-between; font-size: 11px; font-family: monospace; color: #6b7280; margin-top: 4px; padding-left: 30px; padding-right: 30px; font-weight: 600;">
+            <span style="display: inline-block;">0</span>
+            <span style="display: inline-block;">10</span>
+            <span style="display: inline-block;">20</span>
+            <span style="display: inline-block;">30</span>
+            <span style="display: inline-block;">40</span>
+            <span style="display: inline-block;">50</span>
+            <span style="display: inline-block;">60</span>
+            <span style="display: inline-block;">70</span>
+            <span style="display: inline-block;">80</span>
+            <span style="display: inline-block;">90</span>
+            <span style="display: inline-block;">100</span>
+        </div>
+    </div>
+</template>
 
         {{-- MODE: DENAH RUANGAN --}}
         <template x-if="viewMode === 'rooms'">
@@ -141,34 +261,36 @@
                 </div>
 
                 {{-- Info panel --}}
-                <div class="absolute top-8 right-8 rounded-lg shadow-lg z-10"
-                     style="background: rgba(255,255,255,0.95); padding: 16px; backdrop-filter: blur(4px); transform: translateX(640%);">
+                <div class="absolute rounded-lg shadow-lg z-10"
+                     style="background: rgba(255,255,255,0.95); padding: 16px; backdrop-filter: blur(4px); top: 0px; right: 0px; max-width: 250px; border-radius: 0 px 0 0;">
                     <div style="font-size: 13px; color: #6b7280;">
                         <div style="font-weight: 700; margin-bottom: 8px; color: #111827;">Informasi:</div>
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
                             <div style="width: 16px; height: 16px; background: #93c5fd; border: 2px solid #2563eb; border-radius: 2px;"></div>
                             <span>Ruangan</span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                        <div style="font-weight: 600; margin-top: 8px; margin-bottom: 4px; color: #111827;">Access Point:</div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <div style="width: 12px; height: 12px; background: #10b981; border: 2px solid white; border-radius: 50%;"></div>
+                            <span>Active</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <div style="width: 12px; height: 12px; background: #fbbf24; border: 2px solid white; border-radius: 50%;"></div>
+                            <span>Maintenance</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                             <div style="width: 12px; height: 12px; background: #ef4444; border: 2px solid white; border-radius: 50%;"></div>
-                            <span>Access Point</span>
+                            <span>Offline</span>
                         </div>
                         <div style="padding-top: 8px; border-top: 1px solid #e5e7eb;">
-                            <div style="font-weight: 600; margin-bottom: 4px;" x-text="'Total Ruangan: ' + rooms.length"></div>
-                            <div style="font-weight: 600;" x-text="'Total AP: ' + accessPoints.length"></div>
+                            <div style="font-weight: 600; margin-bottom: 4px;" x-text="'Total Ruangan Lantai ' + currentFloor + ': ' + rooms.filter(r => r.floor === currentFloor).length"></div>
+                            <div style="font-weight: 600;" x-text="'Total AP: ' + accessPoints.filter(a => a.floor === currentFloor).length"></div>
                         </div>
                     </div>
                 </div>
 
-                {{-- Debug info (hapus setelah berhasil) --}}
-                {{-- <div class="absolute bottom-4 left-4 rounded text-xs" 
-                     style="background: rgba(0,0,0,0.7); color: white; padding: 8px;">
-                    <div x-text="'Rooms: ' + rooms.length"></div>
-                    <div x-text="'APs: ' + accessPoints.length"></div>
-                </div> --}}
-
                 {{-- Rooms --}}
-                <template x-for="room in rooms" :key="room.id">
+                <template x-for="room in rooms.filter(r => r.floor === currentFloor)" :key="room.id">
                     <div
                         class="absolute flex items-center justify-center rounded shadow-md transition-all cursor-pointer"
                         :style="`
@@ -191,7 +313,7 @@
                 </template>
 
                 {{-- Access Points --}}
-                <template x-for="ap in accessPoints" :key="ap.id">
+                <template x-for="ap in accessPoints.filter(a => a.floor === currentFloor)" :key="ap.id">
                     <div>
                         <div
                             class="absolute rounded-full cursor-pointer transition-transform"
@@ -200,9 +322,9 @@
                                 top: ${ap.y_position}%;
                                 width: 14px;
                                 height: 14px;
-                                background: #ef4444;
+                                background: ${ap.status === 'active' ? '#10b981' : ap.status === 'maintenance' ? '#fbbf24' : '#ef4444'};
                                 border: 2px solid white;
-                                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                                box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 0 1px ${ap.status === 'active' ? '#10b981' : ap.status === 'maintenance' ? '#fbbf24' : '#ef4444'};
                                 transform: translate(-50%, -50%);
                                 animation: ${ap.status === 'active' ? 'pulse 2s infinite' : 'none'};
                             `"

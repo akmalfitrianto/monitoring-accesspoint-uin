@@ -8,8 +8,9 @@ use App\Models\Building;
 class BuildingMap extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-map';
-    protected static ?string $navigationLabel = 'Denah Gedung';
+    protected static ?string $navigationLabel = 'Denah Kampus';
     protected static ?string $navigationGroup = 'Monitoring';
+    protected static ?string $title = 'Denah UIN Antasari Banjarmasin';
     protected static string $view = 'filament.pages.building-map';
 
     public $buildings;
@@ -18,4 +19,5 @@ class BuildingMap extends Page
     {
         $this->buildings = Building::withCount('accessPoints')->get();
     }
+
 }

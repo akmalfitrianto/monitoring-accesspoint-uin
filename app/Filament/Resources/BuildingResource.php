@@ -34,6 +34,13 @@ class BuildingResource extends Resource
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
+                Forms\Components\TextInput::make('total_floors')
+                    ->label('Total Lantai')
+                    ->numeric()
+                    ->default(1)
+                    ->minValue(1)
+                    ->maxValue(10)
+                    ->required(),
                 Forms\Components\Textarea::make('description')
                     ->label('Deskripsi Gedung')
                     ->rows(2),
@@ -42,13 +49,12 @@ class BuildingResource extends Resource
                         Forms\Components\TextInput::make('grid_width')
                             ->numeric()
                             ->label('Lebar Grid')
-                            ->default(10)
+                            ->default(0)
                             ->required(),
-
                         Forms\Components\TextInput::make('grid_height')
                             ->numeric()
                             ->label('Tinggi Grid')
-                            ->default(10)
+                            ->default(0)
                             ->required(),
                     ]),
                 Forms\Components\Grid::make(2)
@@ -74,6 +80,7 @@ class BuildingResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('Nama Gedung')->searchable(),
                 Tables\Columns\TextColumn::make('code')->label('Kode Gedung'),
+                Tables\Columns\TextColumn::make('total_floors')->label('Total Lantai'),
                 Tables\Columns\TextColumn::make('grid_width')->label('Lebar'),
                 Tables\Columns\TextColumn::make('grid_height')->label('Tinggi'),
                 Tables\Columns\TextColumn::make('x_position')->label('X'),
