@@ -77,6 +77,9 @@ class RoomResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Nama Ruangan')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('building.name')
                     ->label('Gedung')
                     ->sortable()
@@ -84,9 +87,6 @@ class RoomResource extends Resource
                 Tables\Columns\TextColumn::make('floor')
                     ->label('Lantai')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Nama Ruangan')
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('code')
                     ->label('Kode'),
                 Tables\Columns\TextColumn::make('x_position')
@@ -99,7 +99,12 @@ class RoomResource extends Resource
                     ->label('Tinggi'),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('building_id')
+                ->label('Filter Gedung')
+                ->options(
+                    \App\Models\Building::pluck('name', 'id')->toArray()
+                )
+                ->placeholder('Semua Gedung')
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

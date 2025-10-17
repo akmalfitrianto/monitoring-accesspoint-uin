@@ -9,6 +9,7 @@
             accessPoints: [],
             floors: [],
             currentFloor: 1,
+            showInfoPanel: true,
 
             async loadRooms(buildingId) {
                 try {
@@ -37,7 +38,10 @@
             },
 
             openModal(building) {
-                this.selectedBuilding = building;
+                this.selectedBuilding = {
+                ...building,
+                total_floors: building.total_floors || 1
+                };
                 this.showModal = true;
             },
 
@@ -60,32 +64,8 @@
                 Denah Gedung Kampus
             </h1>
             <h1 class="text-2xl font-bold" style="color: #f59e0b;" x-show="viewMode === 'rooms'">
-                <span>Denah Ruangan</span>
-                <span x-text="selectedBuilding?.name || ''"></span>
+                <span x-text="`Lantai ${currentFloor}`"></span>
             </h1>
-        </div>
-
-        {{-- Floor Pagination (untuk rooms view) --}}
-        <div x-show="viewMode === 'rooms'" style="display: flex; gap: 8px; margin-bottom: 16px; justify-content: center; flex-wrap: wrap;">
-            <template x-for="floor in floors" :key="floor">
-                <button 
-                    x-on:click="currentFloor = floor"
-                    :style="`
-                        background: ${currentFloor === floor ? '#f59e0b' : '#e5e7eb'};
-                        color: ${currentFloor === floor ? 'white' : '#374151'};
-                        padding: 8px 16px;
-                        border-radius: 6px;
-                        font-weight: 600;
-                        font-size: 14px;
-                        cursor: pointer;
-                        border: none;
-                        transition: all 0.2s;
-                    `"
-                    :x-text="`Lantai ${floor}`"
-                    onmouseover="if(this.style.background !== 'rgb(245, 158, 11)') this.style.background='#d1d5db'"
-                    onmouseout="if(this.style.background !== 'rgb(245, 158, 11)') this.style.background='#e5e7eb'"
-                ></button>
-            </template>    
         </div>
 
         {{-- MODE: DENAH GEDUNG --}}
@@ -161,6 +141,7 @@
                             name: '{{ addslashes($building->name) }}',
                             code: '{{ $building->code }}',
                             access_points_count: '{{ $building->access_points_count }}',
+                            total_floors: '{{ $building->total_floors }}',
                         })"
                         class="absolute flex flex-col items-center justify-center rounded-lg shadow-md cursor-pointer transition-all"
                         style="
@@ -236,6 +217,32 @@
     </div>
 </template>
 
+{{-- Floor Pagination --}}
+<div x-show="viewMode === 'rooms'" style="text-align: center; margin-bottom: 16px;">
+    <button x-on:click="currentFloor = Math.max(1, currentFloor - 1)" :disabled="currentFloor === 1" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #6b7280; padding: 4px 8px; margin-right: 4px;">‹</button>
+    
+    <template x-for="floor in floors" :key="floor">
+        <button 
+            x-on:click="currentFloor = floor" 
+            :style="`
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                border: none;
+                cursor: pointer;
+                padding: 0;
+                margin: 0 4px;
+                background: ${currentFloor === floor ? '#f59e0b' : '#d1d5db'};
+                transition: all 0.2s;
+            `"
+            onmouseover="this.style.transform='scale(1.3)'"
+            onmouseout="this.style.transform='scale(1)'"
+        ></button>
+    </template>
+    
+    <button x-on:click="currentFloor = Math.min(floors[floors.length - 1], currentFloor + 1)" :disabled="currentFloor === floors[floors.length - 1]" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #6b7280; padding: 4px 8px; margin-left: 4px;">›</button>
+</div>
+
         {{-- MODE: DENAH RUANGAN --}}
         <template x-if="viewMode === 'rooms'">
             <div class="relative border-4 rounded-xl mx-auto shadow-2xl overflow-hidden"
@@ -261,33 +268,33 @@
                 </div>
 
                 {{-- Info panel --}}
-                <div class="absolute rounded-lg shadow-lg z-10"
-                     style="background: rgba(255,255,255,0.95); padding: 16px; backdrop-filter: blur(4px); top: 0px; right: 0px; max-width: 250px; border-radius: 0 px 0 0;">
-                    <div style="font-size: 13px; color: #6b7280;">
-                        <div style="font-weight: 700; margin-bottom: 8px; color: #111827;">Informasi:</div>
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                            <div style="width: 16px; height: 16px; background: #93c5fd; border: 2px solid #2563eb; border-radius: 2px;"></div>
-                            <span>Ruangan</span>
-                        </div>
-                        <div style="font-weight: 600; margin-top: 8px; margin-bottom: 4px; color: #111827;">Access Point:</div>
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                            <div style="width: 12px; height: 12px; background: #10b981; border: 2px solid white; border-radius: 50%;"></div>
-                            <span>Active</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                            <div style="width: 12px; height: 12px; background: #fbbf24; border: 2px solid white; border-radius: 50%;"></div>
-                            <span>Maintenance</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                            <div style="width: 12px; height: 12px; background: #ef4444; border: 2px solid white; border-radius: 50%;"></div>
-                            <span>Offline</span>
-                        </div>
-                        <div style="padding-top: 8px; border-top: 1px solid #e5e7eb;">
-                            <div style="font-weight: 600; margin-bottom: 4px;" x-text="'Total Ruangan Lantai ' + currentFloor + ': ' + rooms.filter(r => r.floor === currentFloor).length"></div>
-                            <div style="font-weight: 600;" x-text="'Total AP: ' + accessPoints.filter(a => a.floor === currentFloor).length"></div>
-                        </div>
-                    </div>
-                </div>
+<div x-show="showInfoPanel" class="absolute rounded-lg shadow-lg z-10"
+     style="background: rgba(255,255,255,0.95); padding: 16px; backdrop-filter: blur(4px); top: 0px; right: 0px; max-width: 250px; border-radius: 0 4px 0 0;">
+    <div style="font-size: 13px; color: #6b7280;">
+        <div style="font-weight: 700; margin-bottom: 8px; color: #111827;">Informasi:</div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <div style="width: 16px; height: 16px; background: #93c5fd; border: 2px solid #2563eb; border-radius: 2px;"></div>
+            <span>Ruangan</span>
+        </div>
+        <div style="font-weight: 600; margin-top: 8px; margin-bottom: 4px; color: #111827;">Access Point:</div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <div style="width: 12px; height: 12px; background: #10b981; border: 2px solid white; border-radius: 50%;"></div>
+            <span>Active</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <div style="width: 12px; height: 12px; background: #fbbf24; border: 2px solid white; border-radius: 50%;"></div>
+            <span>Maintenance</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <div style="width: 12px; height: 12px; background: #ef4444; border: 2px solid white; border-radius: 50%;"></div>
+            <span>Offline</span>
+        </div>
+        <div style="padding-top: 8px; border-top: 1px solid #e5e7eb;">
+            <div style="font-weight: 600; margin-bottom: 4px;" x-text="'Total Ruangan Lantai ' + currentFloor + ': ' + rooms.filter(r => r.floor === currentFloor).length"></div>
+            <div style="font-weight: 600;" x-text="'Total AP: ' + accessPoints.filter(a => a.floor === currentFloor).length"></div>
+        </div>
+    </div>
+</div>
 
                 {{-- Rooms --}}
                 <template x-for="room in rooms.filter(r => r.floor === currentFloor)" :key="room.id">
@@ -377,7 +384,7 @@
                     <div style="margin-bottom: 24px;">
                         <div class="flex items-center gap-3 rounded-lg" 
                              style="background: #f9fafb; padding: 12px; margin-bottom: 12px;">
-                            <div style="font-size: 24px;">🏢</div>
+                            <div style="font-size: 24px;">🏫</div>
                             <div>
                                 <div style="font-size: 11px; color: #9ca3af; margin-bottom: 2px;">Kode Gedung</div>
                                 <div style="font-weight: 600; color: #111827;" x-text="selectedBuilding.code"></div>
@@ -390,6 +397,15 @@
                             <div>
                                 <div style="font-size: 11px; color: #9ca3af; margin-bottom: 2px;">Jumlah Access Point</div>
                                 <div style="font-weight: 600; color: #111827;" x-text="selectedBuilding.access_points_count + ' AP'"></div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 rounded-lg" 
+                            style="background: #f9fafb; padding: 12px;">
+                            <div style="font-size: 24px;">🏢</div>
+                            <div>
+                                <div style="font-size: 11px; color: #9ca3af; margin-bottom: 2px;">Jumlah Lantai</div>
+                                <div style="font-weight: 600; color: #111827;" x-text="selectedBuilding.total_floors + ' Lantai'"></div>
                             </div>
                         </div>
                     </div>

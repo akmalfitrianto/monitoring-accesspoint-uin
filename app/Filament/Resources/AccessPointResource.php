@@ -104,16 +104,24 @@ class AccessPointResource extends Resource
                 Tables\Columns\TextColumn::make('floor')->label('Lantai')->sortable(),
                 Tables\Columns\TextColumn::make('room.name')->label('Ruangan')->searchable(),
                 Tables\Columns\TextColumn::make('signal_strength')->label('Sinyal (dBm)'),
-                Tables\Columns\TextColumn::make('status')
-                    ->badge()
+                Tables\Columns\SelectColumn::make('status')
                     ->label('Status')
-                    ->colors([
-                        'success' => 'active',
-                        'warning' => 'maintenance',
-                        'danger' => 'offline',
+                    ->options([
+                        'active' => 'Active',
+                        'maintenance' => 'Maintenance',
+                        'offline' => 'Offline',
                     ]),
                 Tables\Columns\TextColumn::make('x_position')->label('X'),
                 Tables\Columns\TextColumn::make('y_position')->label('Y'),
+            ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Filter Status')
+                    ->options([
+                        'active' => 'Active',
+                        'maintenance' => 'Maintenance',
+                        'offline' => 'Offline',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
