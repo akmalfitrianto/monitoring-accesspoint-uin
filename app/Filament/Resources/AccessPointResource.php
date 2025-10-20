@@ -77,11 +77,6 @@ class AccessPointResource extends Resource
                             ->default(0)
                             ->required(),
                     ]),
-                Forms\Components\TextInput::make('signal_strength')
-                    ->numeric()
-                    ->label('Kekuatan Sinyal (dBm)')
-                    ->default(-60),
-
                 Forms\Components\Select::make('status')
                     ->label('Status')
                     ->options([
@@ -103,7 +98,6 @@ class AccessPointResource extends Resource
                 Tables\Columns\TextColumn::make('building.name')->label('Gedung')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('floor')->label('Lantai')->sortable(),
                 Tables\Columns\TextColumn::make('room.name')->label('Ruangan')->searchable(),
-                Tables\Columns\TextColumn::make('signal_strength')->label('Sinyal (dBm)'),
                 Tables\Columns\SelectColumn::make('status')
                     ->label('Status')
                     ->options([

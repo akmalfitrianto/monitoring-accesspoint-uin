@@ -25,6 +25,7 @@
                     });
 
                     const numberOfFloors = Math.max(data.total_floors || 1, maxFloorInData);
+
                     this.floors = Array.from({length: numberOfFloors}, (_, i) => i + 1);
 
                     this.rooms = data.rooms || [];
@@ -54,6 +55,28 @@
                 this.viewMode = 'buildings';
                 this.rooms = [];
                 this.accessPoints = [];
+            }, 
+
+            calculateAPPosition(ap, index, allAPsInFloor) {
+
+                const samePositionAPs = allAPsInFloor.filter(a => 
+                    a.x_position === ap.x_position && a.y_position === ap.y_position
+                );
+                
+                if (samePositionAPs.length > 1) {
+                    
+                    const angle = (index / samePositionAPs.length) * Math.PI * 2;
+                    const radius = 2; // offset 2%
+                    return {
+                        x: ap.x_position + (Math.cos(angle) * radius),
+                        y: ap.y_position + (Math.sin(angle) * radius)
+                    };
+                }
+                
+                return {
+                    x: ap.x_position,
+                    y: ap.y_position
+                };
             }
         }"
         class="space-y-4"
@@ -320,13 +343,13 @@
                 </template>
 
                 {{-- Access Points --}}
-                <template x-for="ap in accessPoints.filter(a => a.floor === currentFloor)" :key="ap.id">
+                <template x-for="(ap, apIndex) in accessPoints.filter(a => a.floor === currentFloor)" :key="ap.id">
                     <div>
                         <div
                             class="absolute rounded-full cursor-pointer transition-transform"
                             :style="`
-                                left: ${ap.x_position}%;
-                                top: ${ap.y_position}%;
+                                left: ${calculateAPPosition(ap, apIndex, accessPoints.filter(a => a.floor === currentFloor)).x}%;
+                                top: ${calculateAPPosition(ap, apIndex, accessPoints.filter(a => a.floor === currentFloor)).y}%;
                                 width: 14px;
                                 height: 14px;
                                 background: ${ap.status === 'active' ? '#10b981' : ap.status === 'maintenance' ? '#fbbf24' : '#ef4444'};
@@ -338,7 +361,16 @@
                             :title="`${ap.name} (${ap.status})`"
                             onmouseover="this.style.transform='translate(-50%, -50%) scale(1.8)'"
                             onmouseout="this.style.transform='translate(-50%, -50%) scale(1)'"
-                        ></div>
+                        >
+                        {{-- Tooltip --}}
+                        <div style="position: absolute; bottom:100%; left: 50%; transform: translateX(-50%); 
+                        white-space: nowrap; background: #1f2937; color: white; padding: 6px 10px;
+                        border-radius: 4px; font-size: 11px; opacity: 0; pointer-events: none;
+                        transition: opacity 0.2s; margin-bottom: 8px; z-index: 100;" class="ap-tooltip">
+                            <div x-text="`${ap.name}`"></div>
+                            <div style="font-size: 10px; opacity: 0.8;" x-text="`Status: ${ap.status}`"></div>
+                        </div>
+                    </div>
                     </div>
                 </template>
             </div>

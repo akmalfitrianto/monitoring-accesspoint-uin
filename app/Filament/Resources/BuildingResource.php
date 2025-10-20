@@ -70,7 +70,7 @@ class BuildingResource extends Resource
                             ->label('Posisi Y')
                             ->default(0)
                             ->required(),
-                    ])
+                    ]),
             ]);
     }
 
