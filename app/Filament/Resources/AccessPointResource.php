@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\AccessPointResource\Pages;
 use App\Filament\Resources\AccessPointResource\RelationManagers;
 use App\Models\AccessPoint;
+use App\Models\Building;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -110,12 +111,15 @@ class AccessPointResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
-                    ->label('Filter Status')
+                    ->label('Status')
                     ->options([
                         'active' => 'Active',
                         'maintenance' => 'Maintenance',
                         'offline' => 'Offline',
                     ]),
+                Tables\Filters\SelectFilter::make('building_id')
+                    ->label('Gedung')
+                    ->options(Building::pluck('name', 'id')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
