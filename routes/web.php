@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Livewire\BuildingFloorPlan;
 use App\Models\Building;
+use App\Http\Controllers\TicketController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -48,3 +49,5 @@ Route::get('/admin/api/buildings/{building}/rooms', function (Building $building
         'total_floors' => $building->total_floors,
     ]);
 });
+
+Route::post('/admin/api/tickets', [TicketController::class, 'store'])->name('tickets.store');

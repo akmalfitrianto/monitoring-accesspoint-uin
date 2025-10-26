@@ -132,4 +132,14 @@ class RoomResource extends Resource
             'edit' => Pages\EditRoom::route('/{record}/edit'),
         ];
     }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        $user = auth()->user();
+
+        if (!$user) return false;
+
+        return $user->hasRole('admin');
+    }
+
 }

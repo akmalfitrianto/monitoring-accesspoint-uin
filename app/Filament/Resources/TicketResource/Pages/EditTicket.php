@@ -19,7 +19,8 @@ class EditTicket extends EditRecord
     protected function getSavedNotification(): ?Notification
     {
         return Notification::make()
-            ->label('Data Tiket berhasil diubah')
+            ->title('Perubahan berhasil')
+            ->body('Data tiket berhasil diubah')
             ->success();
     }
 }

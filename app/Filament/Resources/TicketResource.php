@@ -7,6 +7,7 @@ use App\Filament\Resources\TicketResource\RelationManagers;
 use App\Models\Ticket;
 use App\Models\Building;
 use App\Models\Room;
+use Filament\Resources\Pages\ViewRecord;
 use App\Models\AccessPoint;
 use App\Models\User;
 use Filament\Forms;
@@ -21,8 +22,8 @@ class TicketResource extends Resource
 {
     protected static ?string $model = Ticket::class;
 
-    protected static ?string $navigationLabel = 'Semua Pengaduan';
-    protected static ?string $navigationGroup = 'Pengaduan';
+    protected static ?string $navigationLabel = 'All Ticketing';
+    protected static ?string $navigationGroup = 'Ticketing';
     protected static ?string $navigationIcon = 'heroicon-o-ticket';
     protected static ?int $navigationSort = 1;
 
@@ -97,7 +98,6 @@ class TicketResource extends Resource
                         Forms\Components\Select::make('reported_by')
                             ->label('Dilaporkan Oleh')
                             ->options(User::pluck('name', 'id'))
-                            ->default(fn () => auth()->user()?->id)
                             ->required()
                             ->searchable(),
                         
@@ -186,6 +186,17 @@ class TicketResource extends Resource
             'index' => Pages\ListTickets::route('/'),
             'create' => Pages\CreateTicket::route('/create'),
             'edit' => Pages\EditTicket::route('/{record}/edit'),
+            'view' => Pages\ViewTicket::route('/{record}'),
         ];
     }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        $user = auth()->user();
+
+        if (!$user) return false;
+
+        return $user->hasAnyRole(['admin', 'teknisi']);
+    }
+
 }

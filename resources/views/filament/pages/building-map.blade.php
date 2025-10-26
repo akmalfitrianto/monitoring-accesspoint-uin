@@ -10,6 +10,9 @@
             floors: [],
             currentFloor: 1,
             showInfoPanel: true,
+            showReportModal: false,
+            selectedAP: null, 
+            reportDescription: '',
 
             async loadRooms(buildingId) {
                 try {
@@ -57,6 +60,80 @@
                 this.accessPoints = [];
             }, 
 
+            openReportModal(ap) {
+                this.selectedAP = ap;
+                this.reportDescription = '';
+                this.showReportModal = true;
+            },
+
+            async submitReport() {
+            if (!this.reportDescription.trim()) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Deskripsi kosong!',
+                    text: 'Silakan isi deskripsi sebelum mengirim laporan.',
+                    confirmButtonColor: '#3085d6',
+                });
+                return;
+            }
+
+            try {
+                const response = await fetch('/admin/api/tickets', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        access_point_id: this.selectedAP.id,
+                        description: this.reportDescription,
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Laporan berhasil dikirim!',
+                        text: result.message || 'Tiket Anda telah tercatat dan akan segera diproses.',
+                        confirmButtonColor: '#3085d6',
+                    });
+
+                    this.showReportModal = false;
+                    this.reportDescription = '';
+
+                    // ubah status AP jadi maintenance secara langsung di tampilan
+                    this.selectedAP.status = 'maintenance';
+
+                    // reload data ruangan kalau diperlukan
+                    if (this.selectedBuilding?.id) {
+                        await this.loadRooms(this.selectedBuilding.id);
+                    }
+
+                } else {
+                    const err = await response.json().catch(() => ({}));
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal mengirim laporan!',
+                        text: err.message || 'Terjadi kesalahan saat mengirim data.',
+                        confirmButtonColor: '#d33',
+                    });
+                }
+
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Kesalahan jaringan!',
+                    text: 'Tidak dapat menghubungi server. Coba lagi nanti.',
+                    confirmButtonColor: '#d33',
+                });
+                console.error(error);
+            }
+        },
+
+
             calculateAPPosition(ap, index, allAPsInFloor) {
 
                 const samePositionAPs = allAPsInFloor.filter(a => 
@@ -95,36 +172,11 @@
 <template x-if="viewMode === 'buildings'">
     <div class="relative mx-auto" style="width: 100%; max-width: 1200px;">
         
-        {{-- Horizontal Ruler (Top) --}}
-        {{-- <div style="position: relative; display: flex; justify-content: space-between; font-size: 11px; font-family: monospace; color: #6b7280; margin-bottom: 4px; padding-left: 30px; padding-right: 30px; font-weight: 600;">
-            <span style="display: inline-block;">0</span>
-            <span style="display: inline-block;">10</span>
-            <span style="display: inline-block;">20</span>
-            <span style="display: inline-block;">30</span>
-            <span style="display: inline-block;">40</span>
-            <span style="display: inline-block;">50</span>
-            <span style="display: inline-block;">60</span>
-            <span style="display: inline-block;">70</span>
-            <span style="display: inline-block;">80</span>
-            <span style="display: inline-block;">90</span>
-            <span style="display: inline-block;">100</span>
-        </div> --}}
+        {{--disini cuy--}}
 
         <div style="display: flex;">
-            {{-- Vertical Ruler (Left) --}}
-            {{-- <div style="display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; font-family: monospace; color: #6b7280; padding-right: 8px; width: 30px; height: 700px; font-weight: 600; text-align: right;">
-                <span style="display: block;">0</span>
-                <span style="display: block;">10</span>
-                <span style="display: block;">20</span>
-                <span style="display: block;">30</span>
-                <span style="display: block;">40</span>
-                <span style="display: block;">50</span>
-                <span style="display: block;">60</span>
-                <span style="display: block;">70</span>
-                <span style="display: block;">80</span>
-                <span style="display: block;">90</span>
-                <span style="display: block;">100</span>
-            </div> --}}
+            
+            {{--disini jua--}}
 
             {{-- Main Canvas --}}
             <div class="relative border-4 rounded-xl shadow-2xl overflow-hidden"
@@ -207,36 +259,7 @@
                 @endforeach
             </div>
 
-            {{-- Vertical Ruler (Right) --}}
-            <div style="display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; font-family: monospace; color: #6b7280; padding-left: 8px; width: 30px; height: 700px; font-weight: 600;">
-                <span style="display: block;">0</span>
-                <span style="display: block;">10</span>
-                <span style="display: block;">20</span>
-                <span style="display: block;">30</span>
-                <span style="display: block;">40</span>
-                <span style="display: block;">50</span>
-                <span style="display: block;">60</span>
-                <span style="display: block;">70</span>
-                <span style="display: block;">80</span>
-                <span style="display: block;">90</span>
-                <span style="display: block;">100</span>
-            </div>
-        </div>
-
-        {{-- Horizontal Ruler (Bottom) --}}
-        <div style="position: relative; display: flex; justify-content: space-between; font-size: 11px; font-family: monospace; color: #6b7280; margin-top: 4px; padding-left: 30px; padding-right: 30px; font-weight: 600;">
-            <span style="display: inline-block;">0</span>
-            <span style="display: inline-block;">10</span>
-            <span style="display: inline-block;">20</span>
-            <span style="display: inline-block;">30</span>
-            <span style="display: inline-block;">40</span>
-            <span style="display: inline-block;">50</span>
-            <span style="display: inline-block;">60</span>
-            <span style="display: inline-block;">70</span>
-            <span style="display: inline-block;">80</span>
-            <span style="display: inline-block;">90</span>
-            <span style="display: inline-block;">100</span>
-        </div>
+            {{-- andakannya disini --}}
     </div>
 </template>
 
@@ -347,6 +370,7 @@
                     <div>
                         <div
                             class="absolute rounded-full cursor-pointer transition-transform"
+                            x-on:click="openReportModal(ap)"
                             :style="`
                                 left: ${calculateAPPosition(ap, apIndex, accessPoints.filter(a => a.floor === currentFloor)).x}%;
                                 top: ${calculateAPPosition(ap, apIndex, accessPoints.filter(a => a.floor === currentFloor)).y}%;
@@ -375,6 +399,32 @@
                 </template>
             </div>
         </template>
+
+        {{-- Modal Laporan Tiket --}}
+<template x-if="showReportModal">
+    <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" x-on:click.self="showReportModal = false">
+        <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+            <h2 class="text-xl font-bold mb-4 text-gray-800">Laporkan Masalah AP</h2>
+            
+            <div class="mb-3 text-sm text-gray-600">
+                <strong x-text="selectedAP.name"></strong><br>
+                Status saat ini: <span x-text="selectedAP.status"></span>
+            </div>
+
+            <textarea x-model="reportDescription" class="w-full border rounded-lg p-2 text-sm" rows="4" placeholder="Deskripsikan masalah di Access Point ini..."></textarea>
+            
+            <div class="mt-4 flex justify-end gap-3">
+                <button x-on:click="showReportModal = false" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm">Batal</button>
+                <button
+                    x-on:click="submitReport"
+                    class="px-4 py-2 rounded-lg text-white text-sm"
+                    style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);"
+                >Kirim Laporan</button>
+            </div>
+        </div>
+    </div>
+</template>
+
 
         {{-- Modal Popup --}}
         <template x-if="showModal">
@@ -481,3 +531,5 @@
         }
     </style>
 </x-filament-panels::page>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

@@ -19,7 +19,8 @@ class CreateTicket extends CreateRecord
     protected function getCreatedNotification(): ?Notification
     {
         return Notification::make()
-            ->label('Data Tiket berhasil ditambahkan')
+            ->title('Data Berhasil disimpan')
+            ->body('Data tiket berhasil ditambahkan')
             ->success();
     }
 }
