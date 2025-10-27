@@ -29,11 +29,13 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->homeUrl('/admin/dashboard')
+            ->brandLogo(asset('images/Logo-UIN-Antasari-Banjarmasin.png'))
+            ->brandLogoHeight('3.5rem')
             ->pages([
                 Dashboard::class,
             ])
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => '#019486',
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

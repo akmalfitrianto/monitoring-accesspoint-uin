@@ -259,4 +259,12 @@ class Ticket extends Model
             default => $this->status,
         };
     }
+
+    // ==================== ACCESSORS ====================
+
+    public function getFloorAttribute()
+    {
+        return $this->accessPoint?->floor ?? '-';
+    }
+
 }

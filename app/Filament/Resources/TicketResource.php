@@ -137,6 +137,9 @@ class TicketResource extends Resource
                 Tables\Columns\TextColumn::make('accessPoint.name')
                     ->label('Access Point')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('floor')
+                    ->label('Lantai')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('reporter.name')
                     ->label('Pelapor')
                     ->searchable(),

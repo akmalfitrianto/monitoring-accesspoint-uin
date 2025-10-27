@@ -11,10 +11,19 @@
             class="grid grid-cols-1 gap-4"
         />
 
+        {{-- Bagian Grafik Trend Tiket di Bawah Statistik --}}
+        <x-filament-widgets::widgets
+            :widgets="[
+                \App\Filament\Widgets\RecentTicketsWidget::class,
+            ]"
+            class="grid grid-cols-1 gap-4"
+        />
+
         {{-- Bagian Grafik di Bawah --}}
         <x-filament-widgets::widgets
             :widgets="[
                 \App\Filament\Widgets\NetworkStatusChart::class,
+                \App\Filament\Widgets\TicketTrendChart::class,
             ]"
             class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
         />

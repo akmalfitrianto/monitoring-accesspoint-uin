@@ -101,8 +101,9 @@ class MyTicketResource extends Resource
                 Tables\Columns\TextColumn::make('building.name')->label('Gedung')->sortable(),
                 Tables\Columns\TextColumn::make('room.name')->label('Ruangan')->default('-'),
                 Tables\Columns\TextColumn::make('accessPoint.name')->label('Access Point')->default('-'),
+                Tables\Columns\TextColumn::make('floor')->label('Lantai')->sortable(),
                 Tables\Columns\TextColumn::make('reporter.name')->label('Pelapor')->sortable(),
-                // Tables\Columns\TextColumn::make('technician.name')->label('Teknisi')->default('-')->sortable(),
+                Tables\Columns\TextColumn::make('technician.name')->label('Teknisi')->default('-')->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->colors([
