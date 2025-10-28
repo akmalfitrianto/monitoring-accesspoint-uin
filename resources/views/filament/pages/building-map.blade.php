@@ -107,6 +107,7 @@
                     timer: 3000,
                     timerProgressBar: true,
                 });
+                this.loadingReport = false;
                 return;
             }
     
