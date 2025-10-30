@@ -28,67 +28,75 @@ class MyTicketResource extends Resource
 {
     return $form
         ->schema([
-            Forms\Components\TextInput::make('title')
-                ->label('Judul Masalah')
-                ->required()
-                ->maxLength(255),
+            Forms\Components\Section::make('Masalah')
+                ->schema([
+                    Forms\Components\TextInput::make('title')
+                        ->label('Judul Masalah')
+                        ->required()
+                        ->maxLength(255),
 
-            Forms\Components\Textarea::make('description')
-                ->label('Deskripsi Masalah')
-                ->required()
-                ->rows(4),
+                    Forms\Components\Textarea::make('description')
+                        ->label('Deskripsi Masalah')
+                        ->required()
+                        ->rows(4),
+                ])
+                ->columns(2),
 
-            Forms\Components\Select::make('building_id')
-                ->label('Gedung')
-                ->options(Building::pluck('name', 'id'))
-                ->required()
-                ->reactive()
-                ->searchable(),
+            Forms\Components\Section::make('Posisi AP Bermasalah')
+                ->schema([
+                    Forms\Components\Select::make('building_id')
+                        ->label('Gedung')
+                        ->options(Building::pluck('name', 'id'))
+                        ->required()
+                        ->reactive()
+                        ->searchable(),
 
-            //  Dropdown untuk memilih lantai
-            Forms\Components\Select::make('floor')
-                ->label('Lantai')
-                ->options(function (callable $get) {
-                    $buildingId = $get('building_id');
-                    if (!$buildingId) return [];
+                    //  Dropdown untuk memilih lantai
+                    Forms\Components\Select::make('floor')
+                        ->label('Lantai')
+                        ->options(function (callable $get) {
+                            $buildingId = $get('building_id');
+                            if (!$buildingId) return [];
 
-                    // Ambil daftar lantai unik dari Room di building tsb
-                    return Room::where('building_id', $buildingId)
-                        ->pluck('floor', 'floor')
-                        ->unique()
-                        ->sortKeys()
-                        ->toArray();
-                })
-                ->required()
-                ->reactive()
-                ->searchable(),
+                            // Ambil daftar lantai unik dari Room di building tsb
+                            return Room::where('building_id', $buildingId)
+                                ->pluck('floor', 'floor')
+                                ->unique()
+                                ->sortKeys()
+                                ->toArray();
+                        })
+                        ->required()
+                        ->reactive()
+                        ->searchable(),
 
-            Forms\Components\Select::make('room_id')
-                ->label('Ruangan')
-                ->options(function (callable $get) {
-                    $buildingId = $get('building_id');
-                    $floor = $get('floor');
-                    if (!$buildingId || !$floor) return [];
+                    Forms\Components\Select::make('room_id')
+                        ->label('Ruangan')
+                        ->options(function (callable $get) {
+                            $buildingId = $get('building_id');
+                            $floor = $get('floor');
+                            if (!$buildingId || !$floor) return [];
 
-                    return Room::where('building_id', $buildingId)
-                        ->where('floor', $floor)
-                        ->pluck('name', 'id');
-                })
-                ->required()
-                ->reactive()
-                ->searchable(),
+                            return Room::where('building_id', $buildingId)
+                                ->where('floor', $floor)
+                                ->pluck('name', 'id');
+                        })
+                        ->required()
+                        ->reactive()
+                        ->searchable(),
 
-            Forms\Components\Select::make('access_point_id')
-                ->label('Access Point')
-                ->options(function (callable $get) {
-                    $roomId = $get('room_id');
-                    if (!$roomId) return [];
+                    Forms\Components\Select::make('access_point_id')
+                        ->label('Access Point')
+                        ->options(function (callable $get) {
+                            $roomId = $get('room_id');
+                            if (!$roomId) return [];
 
-                    return AccessPoint::where('room_id', $roomId)
-                        ->pluck('name', 'id');
-                })
-                ->searchable()
-                ->reactive(),
+                            return AccessPoint::where('room_id', $roomId)
+                                ->pluck('name', 'id');
+                        })
+                        ->searchable()
+                        ->reactive(),
+                ])
+                ->columns(2),
         ]);
 }
 

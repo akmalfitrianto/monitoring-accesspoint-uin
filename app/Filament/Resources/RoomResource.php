@@ -25,29 +25,34 @@ class RoomResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('building_id')
-                    ->label('Gedung')
-                    ->relationship('building', 'name')
-                    ->required()
-                    ->preload()
-                    ->searchable(),
-                Forms\Components\Select::make('floor')
-                    ->label('Lantai')
-                    ->options([
-                        1 => 'Lantai 1',
-                        2 => 'Lantai 2',
-                        3 => 'Lantai 3',
-                        4 => 'Lantai 4',
+                Forms\Components\Section::make('Informasi Ruangan')
+                    ->schema([
+                        Forms\Components\Select::make('building_id')
+                            ->label('Gedung')
+                            ->relationship('building', 'name')
+                            ->required()
+                            ->preload()
+                            ->searchable(),
+                        Forms\Components\Select::make('floor')
+                            ->label('Lantai')
+                            ->options([
+                                1 => 'Lantai 1',
+                                2 => 'Lantai 2',
+                                3 => 'Lantai 3',
+                                4 => 'Lantai 4',
+                            ])
+                            ->default(1)
+                            ->required(),
+                        Forms\Components\TextInput::make('name')
+                            ->label('Nama Ruangan')
+                            ->required(),
+                        Forms\Components\TextInput::make('code')
+                            ->label('Kode Ruangan')
+                            ->maxLength(50),
                     ])
-                    ->default(1)
-                    ->required(),
-                Forms\Components\TextInput::make('name')
-                    ->label('Nama Ruangan')
-                    ->required(),
-                Forms\Components\TextInput::make('code')
-                    ->label('Kode Ruangan')
-                    ->maxLength(50),
-                Forms\Components\Grid::make(2)
+                    ->columns(2),
+
+                Forms\Components\Section::make('Posisi Ruangan')
                     ->schema([
                         Forms\Components\TextInput::make('x_position')
                             ->label('Posisi X')
@@ -58,8 +63,10 @@ class RoomResource extends Resource
                             ->label('Posisi Y')
                             ->numeric()
                             ->required(),
-                    ]),
-                Forms\Components\Grid::make(2)
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Ukuran Ruangan')
                     ->schema([
                         Forms\Components\TextInput::make('width')
                             ->label('Lebar')
@@ -69,7 +76,8 @@ class RoomResource extends Resource
                             ->label('Tinggi')
                             ->numeric()
                             ->required(),
-                    ]),
+                    ])
+                    ->columns(2),
             ]);
     }
 

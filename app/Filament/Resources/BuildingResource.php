@@ -25,26 +25,31 @@ class BuildingResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->label('Nama Gedung')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('code')
-                    ->label('Kode Gedung')
-                    ->required()
-                    ->unique(ignoreRecord: true)
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('total_floors')
-                    ->label('Total Lantai')
-                    ->numeric()
-                    ->default(1)
-                    ->minValue(1)
-                    ->maxValue(10)
-                    ->required(),
-                Forms\Components\Textarea::make('description')
-                    ->label('Deskripsi Gedung')
-                    ->rows(2),
-                Forms\Components\Grid::make(2)
+                Forms\Components\Section::make('Informasi Gedung')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->label('Nama Gedung')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('code')
+                            ->label('Kode Gedung')
+                            ->required()
+                            ->unique(ignoreRecord: true)
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('total_floors')
+                            ->label('Total Lantai')
+                            ->numeric()
+                            ->default(1)
+                            ->minValue(1)
+                            ->maxValue(10)
+                            ->required(),
+                        Forms\Components\Textarea::make('description')
+                            ->label('Deskripsi Gedung')
+                            ->rows(2),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Ukuran Gedung')
                     ->schema([
                         Forms\Components\TextInput::make('grid_width')
                             ->numeric()
@@ -56,8 +61,10 @@ class BuildingResource extends Resource
                             ->label('Tinggi Grid')
                             ->default(0)
                             ->required(),
-                    ]),
-                Forms\Components\Grid::make(2)
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Posisi Gedung')
                     ->schema([
                         Forms\Components\TextInput::make('x_position')
                             ->numeric()
@@ -70,7 +77,8 @@ class BuildingResource extends Resource
                             ->label('Posisi Y')
                             ->default(0)
                             ->required(),
-                    ]),
+                    ])
+                    ->columns(2),
             ]);
     }
 

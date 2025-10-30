@@ -16,6 +16,7 @@
         selectedTechnician: null,
         loadingTechnicians: false,
         loadingReport: false,
+        
     
         async loadRooms(buildingId) {
             try {

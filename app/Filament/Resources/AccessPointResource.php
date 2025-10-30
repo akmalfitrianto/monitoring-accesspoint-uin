@@ -26,67 +26,93 @@ class AccessPointResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('building_id')
-                    ->label('Gedung')
-                    ->relationship('building', 'name')
-                    ->required()
-                    ->preload()
-                    ->searchable(),
-                Forms\Components\Select::make('floor')
-                    ->label('Lantai')
-                    ->options([
-                        1 => 'Lantai 1',
-                        2 => 'Lantai 2',
-                        3 => 'Lantai 3',
-                        4 => 'Lantai 4',
+                Forms\Components\Section::make('Lokasi Access Point')
+                    ->schema([
+                        Forms\Components\Select::make('building_id')
+                            ->label('Gedung')
+                            ->relationship('building', 'name')
+                            ->required()
+                            ->preload()
+                            ->searchable()
+                            ->reactive(),
+                        Forms\Components\Select::make('floor')
+                            ->label('Lantai')
+                            ->options(function (callable $get) {
+                                $buildingId = $get('building_id');
+                                if (!$buildingId) {
+                                    return [];
+                                }
+
+                                $building = \App\Models\Building::find($buildingId);
+                                if (!$building) {
+                                    return [];
+                                }
+
+                                return collect(range(1, (int) $building->total_floors ?? 1))
+                                    ->mapWithKeys(fn ($i) => [$i => "Lantai {$i}"]);
+                            })
+                            ->required()
+                            ->reactive(),
+                        Forms\Components\Select::make('room_id')
+                            ->label('Ruangan')
+                            ->options(function (callable $get) {
+                                $buildingId = $get('building_id');
+                                $floor = $get('floor');
+
+                                if (!$buildingId || !$floor) {
+                                    return[];
+                                }
+                                return \App\Models\Room::where('building_id', $buildingId)
+                                    ->where('floor', $floor)
+                                    ->pluck('name','id');
+                            })
+                            ->required()
+                            ->reactive()
+                            ->searchable(),
                     ])
-                    ->default(1)
-                    ->required(),
-                Forms\Components\Select::make('room_id')
-                    ->label('Ruangan')
-                    ->options(function (callable $get) {
-                        $buildingId = $get('building_id');
-                        if (!$buildingId) {
-                            return[];
-                        }
-                        return \App\Models\Room::where('building_id', $buildingId)
-                            ->pluck('name','id');
-                    })
-                    ->required()
-                    ->reactive()
-                    ->searchable(),
-                Forms\Components\TextInput::make('name')
-                    ->label('Nama AP')
-                    ->required()
-                    ->maxLength(100),
-                Forms\Components\TextInput::make('mac_address')
-                    ->label('Mac Address')
-                    ->required()
-                    ->unique(ignoreRecord: true)
-                    ->maxLength(50),
-                Forms\Components\Grid::make(2)
+                    ->columns(3),
+
+                Forms\Components\Section::make('Access Point')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->label('Nama AP')
+                            ->required()
+                            ->maxLength(100),
+                        Forms\Components\TextInput::make('mac_address')
+                            ->label('Mac Address')
+                            ->required()
+                            ->unique(ignoreRecord: true)
+                            ->maxLength(50),
+                    ])
+                    ->columns(2),
+                Forms\Components\Section::make('Posisi Access Point')
                     ->schema([
                         Forms\Components\TextInput::make('x_position')
                             ->numeric()
                             ->label('posisi X')
                             ->default(0)
                             ->required(),
-
                         Forms\Components\TextInput::make('y_position')
                             ->numeric()
                             ->label('posisi Y')
                             ->default(0)
                             ->required(),
-                    ]),
-                Forms\Components\Select::make('status')
-                    ->label('Status')
-                    ->options([
-                        'active' => 'Aktif',
-                        'offline' => 'Offline',
-                        'maintenance' => 'Perawatan',
                     ])
-                    ->default('active')
-                    ->required(),
+                    ->columns(2),
+
+                Forms\Components\Section::make('Status Access Points')
+                    ->schema([
+                        Forms\Components\Select::make('status')
+                            ->label('Status')
+                            ->options([
+                                'active' => 'Aktif',
+                                'offline' => 'Offline',
+                                'maintenance' => 'Perawatan',
+                            ])
+                            ->default('active')
+                            ->required(),
+                    ])
+                    ->columns(1)
             ]);
     }
 
@@ -94,7 +120,11 @@ class AccessPointResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')->label('Nama AP')->searchable(),
+                Tables\Columns\TextColumn::make('name')
+                    ->badge()
+                    ->color('info')
+                    ->label('Nama AP')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('mac_address')->label('MAC Address'),
                 Tables\Columns\TextColumn::make('building.name')->label('Gedung')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('floor')->label('Lantai')->sortable(),
@@ -110,7 +140,7 @@ class AccessPointResource extends Resource
                         'active' => 'Active',
                         'maintenance' => 'Maintenance',
                         'offline' => 'Offline',
-                    ]),
+                    ]),                   
                 Tables\Filters\SelectFilter::make('building_id')
                     ->label('Gedung')
                     ->options(Building::pluck('name', 'id')),
@@ -124,6 +154,13 @@ class AccessPointResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['building','room'])
+            ->withoutGlobalScopes();
     }
 
     public static function getRelations(): array
