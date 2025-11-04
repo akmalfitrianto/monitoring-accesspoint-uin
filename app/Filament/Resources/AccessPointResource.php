@@ -185,7 +185,7 @@ class AccessPointResource extends Resource
 
         if (!$user) return false;
 
-        return $user->hasRole('admin');
+        return $user->hasRole('superadmin');
     }
 
 }

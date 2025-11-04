@@ -100,12 +100,6 @@ class TicketResource extends Resource
                             ->options(User::pluck('name', 'id'))
                             ->required()
                             ->searchable(),
-                        
-                        Forms\Components\Select::make('assigned_to')
-                            ->label('Ditugaskan Kepada')
-                            ->options(User::role('teknisi')->pluck('name', 'id'))
-                            ->searchable()
-                            ->placeholder('Belum Ditugaskan'),
 
                         Forms\Components\DateTimePicker::make('resolved_at')
                             ->label('Waktu Selesai')
@@ -143,10 +137,6 @@ class TicketResource extends Resource
                 Tables\Columns\TextColumn::make('reporter.name')
                     ->label('Pelapor')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('technician.name')
-                    ->label('Teknisi')
-                    ->searchable()
-                    ->placeholder('Belum ditugaskan'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime(' d M Y H:i ')
@@ -199,7 +189,7 @@ class TicketResource extends Resource
 
         if (!$user) return false;
 
-        return $user->hasAnyRole(['admin', 'teknisi']);
+        return $user->hasRole(['superadmin']);
     }
 
 }

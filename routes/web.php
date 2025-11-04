@@ -14,9 +14,8 @@ Route::middleware(['auth'])->group(function() {
     Route::get('/admin/denah/{building}', BuildingFloorPlan::class)->name('admin.denah.building');
     
     // API Routes
-    Route::get('/admin/api/technicians', [TicketController::class, 'getTechnicians'])->name('admin.api.technicians');
     Route::post('/admin/api/tickets', [TicketController::class, 'store'])->name('admin.api.tickets.store');
-    
+
     Route::get('/admin/api/buildings/{building}/rooms', function (Building $building) {
         $building->load('rooms.accessPoints');
 

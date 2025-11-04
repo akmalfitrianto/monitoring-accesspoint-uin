@@ -18,7 +18,7 @@ class RecentTicketsWidget extends BaseWidget
         return $table
             ->query(
                 Ticket::query()
-                    ->with(['accessPoint', 'reporter', 'technician'])
+                    ->with(['accessPoint', 'reporter'])
                     ->latest()
                     ->limit(5)
             )
@@ -50,12 +50,6 @@ class RecentTicketsWidget extends BaseWidget
                         'closed' => 'Closed',
                         default => $state,
                     }),
-                    
-                Tables\Columns\TextColumn::make('technician.name')
-                    ->label('Teknisi')
-                    ->default('Belum ditugaskan')
-                    ->icon('heroicon-o-user')
-                    ->color('gray'),
                     
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')

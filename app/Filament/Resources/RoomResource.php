@@ -147,7 +147,7 @@ class RoomResource extends Resource
 
         if (!$user) return false;
 
-        return $user->hasRole('admin');
+        return $user->hasRole('superadmin');
     }
 
 }

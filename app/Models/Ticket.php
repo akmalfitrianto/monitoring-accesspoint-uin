@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
+use App\Notifications\TicketNotification;
+
 class Ticket extends Model
 {
     use HasFactory;
@@ -19,7 +22,6 @@ class Ticket extends Model
         'room_id',
         'access_point_id',
         'reported_by',
-        'assigned_to',
         'resolved_at',
     ];
 
@@ -29,7 +31,7 @@ class Ticket extends Model
     ];
 
     // ==================== RELATIONSHIPS ====================
-    
+
     public function building()
     {
         return $this->belongsTo(Building::class);
@@ -50,18 +52,13 @@ class Ticket extends Model
         return $this->belongsTo(User::class, 'reported_by');
     }
 
-    public function technician()
-    {
-        return $this->belongsTo(User::class, 'assigned_to');
-    }
-
     public function logs()
     {
         return $this->hasMany(TicketLog::class);
     }
 
     // ==================== STATUS HELPERS ====================
-    
+
     public function isOpen()
     {
         return $this->status === 'open';
@@ -88,7 +85,7 @@ class Ticket extends Model
     }
 
     // ==================== SCOPES ====================
-    
+
     public function scopeOpen(Builder $query)
     {
         return $query->where('status', 'open');
@@ -114,11 +111,6 @@ class Ticket extends Model
         return $query->whereNull('assigned_to');
     }
 
-    public function scopeAssignedTo(Builder $query, $userId)
-    {
-        return $query->where('assigned_to', $userId);
-    }
-
     public function scopeReportedBy(Builder $query, $userId)
     {
         return $query->where('reported_by', $userId);
@@ -138,90 +130,82 @@ class Ticket extends Model
     // booted
     protected static function booted(): void
     {
-    static::created(function ($ticket) {
-        $ticket->logs()->create([
-            'user_id' => Auth::id(),
-            'action' => 'ticket_created',
-            'new_status' => $ticket->status,
-            'notes' => 'Tiket dibuat',
-            ]);
-        
-        Notification::make()
-            ->title('Tiket Baru dibuat')
-            ->body("Tiket '{$ticket->title}' telah dibuat " .auth()->user()->name)
-            ->success()
-            ->sendToDatabase(auth()->user());
-
-        $recipients = \App\Models\User::role(['admin', 'teknisi'])->get();
-
-        foreach ($recipients as $user) {
-        Notification::make()
-            ->title('Tiket Baru Dibuat')
-            ->body("{$ticket->reporter->name} membuat tiket baru: '{$ticket->title}'.")
-            ->info()
-            ->sendToDatabase($user);
-        }
-        });
-
-    static::updating(function ($ticket) {
-        if ($ticket->isDirty('status')) {
-            $old = $ticket->getOriginal('status');
-            $new = $ticket->status;
-
+        static::created(function ($ticket) {
             $ticket->logs()->create([
-                'user_id' => Auth::id(),
-                'action' => 'status_changed',
-                'old_status' => $old,
-                'new_status' => $new,
-                'notes' => "Status berubah dari {$old} menjadi {$new}",
+                'user_id' => $ticket->reported_by,
+                'action' => 'ticket_created',
+                'new_status' => $ticket->status,
+                'notes' => 'Tiket dibuat',
             ]);
-
-            if ($new === 'resolved' && $ticket->accessPoint) {
-                $ticket->accessPoint->update(['status'=>'active']);
-            }
-
-            if ($new === 'open' && $ticket->accessPoint) {
-                $ticket->accessPoint->update(['status'=>'maintenance']);
-            }
 
             if ($ticket->reporter) {
-                Notification::make()
-                    ->title('Status Tiket Berubah')
-                    ->body("Status tiket '{$ticket->title}' berubah dari {$old} menjadi {$new}")
-                    ->success()
-                    ->sendToDatabase($ticket->reporter);
+                $ticket->reporter->notify(new TicketNotification(
+                    title: 'Tiket baru dibuat',
+                    body: "Tiket '{$ticket->title}' berhasil dilaporkan",
+                    type: 'success'
+                ));
             }
-        }
 
-        if ($ticket->isDirty('assigned_to')) {
-            $oldTech = $ticket->getOriginal('assigned_to');
-            $newTech = $ticket->assigned_to;
+            $superAdmins = \App\Models\User::role(['superadmin'])->get();
 
-            $ticket->logs()->create([
-                'user_id' => Auth::id(),
-                'action' => 'technician_assigned',
-                'notes' => "Teknisi berubah dari ID {$oldTech} ke ID {$newTech}",
-            ]);
+            foreach ($superAdmins as $user) {
+                $user->notify(new TicketNotification(
+                    title: 'Tiket Baru Dibuat',
+                    body: "{$ticket->reporter->name} membuat tiket baru: '{$ticket->title}'.",
+                    type: 'info'
+                ));
+            }
+        });
 
-        Notification::make()
-            ->title('Tiket baru ditugaskan')
-            ->body("Kamu telah ditugaskan untuk tiket '{$ticket->title}'.")
-            ->warning()
-            ->sendToDatabase($ticket->technician);
-        }
-    });
+        static::updating(function ($ticket) {
+            if ($ticket->isDirty('status')) {
+                $old = $ticket->getOriginal('status');
+                $new = $ticket->status;
+
+                $updatingUserId = auth()->id() ?? $ticket->reported_by;
+
+                $ticket->logs()->create([
+                    'user_id' => $updatingUserId,
+                    'action' => 'status_changed',
+                    'old_status' => $old,
+                    'new_status' => $new,
+                    'notes' => "Status berubah dari {$old} menjadi {$new}",
+                ]);
+
+                if ($ticket->accessPoint) {
+                    $apStatus = match($new) {
+                        'resolved' => 'active',
+                        'open' => 'maintenance',
+                        default => $ticket->accessPoint->status
+                    };
+                    $ticket->accessPoint->update(['status' => $apStatus]);
+                }
+
+                if ($ticket->reporter && $ticket->reporter->id != $updatingUserId) {
+                    $ticket->reporter->notify(new TicketNotification(
+                        title: 'Status Tiket Berubah',
+                        body: "Status tiket '{$ticket->title}' berubah dari {$old} menjadi {$new}",
+                        type: 'success'
+                    ));
+                }
+
+                $admins = \App\Models\User::role(['admin','superadmin'])
+                    ->where('id', '!=', $updatingUserId)
+                    ->get();
+                
+                foreach ($admins as $admin) {
+                    $admin->notify(new TicketNotification(
+                        title: 'Status tiket diperbarui',
+                        body: "Status tiket '{$ticket->title}' diubah menjadi {$new}",
+                        type: 'info'
+                    ));
+                }
+            }
+        });
     }
 
 
     // ==================== METHODS ====================
-    
-    public function assignTo(User $technician)
-    {
-        $this->update([
-            'assigned_to' => $technician->id,
-            'status' => 'in_progress',
-        ]);
-    }
 
     public function markAsResolved()
     {
@@ -240,7 +224,7 @@ class Ticket extends Model
 
     public function getStatusBadgeColor()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'open' => 'warning',
             'in_progress' => 'info',
             'resolved' => 'success',
@@ -251,7 +235,7 @@ class Ticket extends Model
 
     public function getStatusLabel()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'open' => 'Open',
             'in_progress' => 'In Progress',
             'resolved' => 'Resolved',
@@ -266,5 +250,4 @@ class Ticket extends Model
     {
         return $this->accessPoint?->floor ?? '-';
     }
-
 }

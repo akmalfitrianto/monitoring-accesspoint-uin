@@ -12,11 +12,8 @@
         showReportModal: false,
         selectedAP: null,
         reportDescription: '',
-        technicians: [],
-        selectedTechnician: null,
-        loadingTechnicians: false,
         loadingReport: false,
-        
+    
     
         async loadRooms(buildingId) {
             try {
@@ -64,34 +61,10 @@
             this.accessPoints = [];
         },
     
-        async loadTechnicians() {
-            this.loadingTechnicians = true;
-            try {
-                const response = await fetch('/admin/api/technicians');
-                if (response.ok) {
-                    this.technicians = await response.json();
-                } else {
-                    console.error('Failed to load technicians');
-                }
-            } catch (error) {
-                console.error('Error loading technicians:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal memuat teknisi',
-                    text: 'Tidak dapat mengambil daftar teknisi',
-                    confirmButtonColor: '#d33',
-                });
-            } finally {
-                this.loadingTechnicians = false;
-            }
-        },
-    
         openReportModal(ap) {
             this.selectedAP = ap;
             this.reportDescription = '';
-            this.selectedTechnician = null;
             this.showReportModal = true;
-            this.loadTechnicians();
         },
     
         async submitReport() {
@@ -126,19 +99,6 @@
                 return;
             }
     
-            if (!this.selectedTechnician) {
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'warning',
-                    title: 'Teknisi belum dipilih',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true,
-                });
-                this.loadingReport = false;
-                return;
-            }
     
             try {
                 const response = await fetch('/admin/api/tickets', {
@@ -150,7 +110,6 @@
                     body: JSON.stringify({
                         access_point_id: this.selectedAP.id,
                         description: this.reportDescription,
-                        assigned_to: this.selectedTechnician,
                     })
                 });
     
@@ -169,7 +128,6 @@
     
                     this.showReportModal = false;
                     this.reportDescription = '';
-                    this.selectedTechnician = null;
     
                     // ubah status AP jadi maintenance secara langsung di tampilan
                     this.selectedAP.status = 'maintenance';
@@ -267,7 +225,8 @@
                             <div style="font-weight: 700; margin-bottom: 8px; color: #111827; font-size: 13px;">📍 Denah
                                 Kampus</div>
                             <div style="margin-bottom: 4px;">Total Gedung:
-                                <strong>{{ $this->buildings->count() }}</strong></div>
+                                <strong>{{ $this->buildings->count() }}</strong>
+                            </div>
                             <div>Total AP: <strong>{{ $this->buildings->sum('access_points_count') }}</strong></div>
                         </div>
 
@@ -346,16 +305,16 @@
             <template x-for="floor in floors" :key="floor">
                 <button x-on:click="currentFloor = floor"
                     :style="`
-                                    width: 8px;
-                                    height: 8px;
-                                    border-radius: 50%;
-                                    border: none;
-                                    cursor: pointer;
-                                    padding: 0;
-                                    margin: 0 4px;
-                                    background: ${currentFloor === floor ? '#019486' : '#d1d5db'};
-                                    transition: all 0.2s;
-                                `"
+                                                        width: 8px;
+                                                        height: 8px;
+                                                        border-radius: 50%;
+                                                        border: none;
+                                                        cursor: pointer;
+                                                        padding: 0;
+                                                        margin: 0 4px;
+                                                        background: ${currentFloor === floor ? '#019486' : '#d1d5db'};
+                                                        transition: all 0.2s;
+                                                    `"
                     onmouseover="this.style.transform='scale(1.3)'"
                     onmouseout="this.style.transform='scale(1)'"></button>
             </template>
@@ -432,17 +391,17 @@
                 <template x-for="room in rooms.filter(r => r.floor === currentFloor)" :key="room.id">
                     <div class="absolute flex items-center justify-center rounded shadow-md transition-all cursor-pointer"
                         :style="`
-                                                    left: ${room.x_position}%;
-                                                    top: ${room.y_position}%;
-                                                    width: ${room.width}px;
-                                                    height: ${room.height}px;
-                                                    background: #93c5fd;
-                                                    border: 2px solid #2563eb;
-                                                    color: #1e3a8a;
-                                                    font-size: 11px;
-                                                    font-weight: 700;
-                                                    transform: translate(-50%, -50%);
-                                                `"
+                                                                            left: ${room.x_position}%;
+                                                                            top: ${room.y_position}%;
+                                                                            width: ${room.width}px;
+                                                                            height: ${room.height}px;
+                                                                            background: #93c5fd;
+                                                                            border: 2px solid #2563eb;
+                                                                            color: #1e3a8a;
+                                                                            font-size: 11px;
+                                                                            font-weight: 700;
+                                                                            transform: translate(-50%, -50%);
+                                                                        `"
                         :title="room.name" x-text="room.code"
                         onmouseover="this.style.transform='translate(-50%, -50%) scale(1.05)'; this.style.boxShadow='0 10px 15px rgba(0,0,0,0.3)'"
                         onmouseout="this.style.transform='translate(-50%, -50%) scale(1)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'">
@@ -456,16 +415,16 @@
                         <div class="absolute rounded-full cursor-pointer transition-transform"
                             x-on:click="openReportModal(ap)"
                             :style="`
-                                                            left: ${calculateAPPosition(ap, apIndex, accessPoints.filter(a => a.floor === currentFloor)).x}%;
-                                                            top: ${calculateAPPosition(ap, apIndex, accessPoints.filter(a => a.floor === currentFloor)).y}%;
-                                                            width: 14px;
-                                                            height: 14px;
-                                                            background: ${ap.status === 'active' ? '#10b981' : ap.status === 'maintenance' ? '#fbbf24' : '#ef4444'};
-                                                            border: 2px solid white;
-                                                            box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 0 1px ${ap.status === 'active' ? '#10b981' : ap.status === 'maintenance' ? '#fbbf24' : '#ef4444'};
-                                                            transform: translate(-50%, -50%);
-                                                            animation: ${ap.status === 'active' ? 'pulse 2s infinite' : 'none'};
-                                                        `"
+                                                                                        left: ${calculateAPPosition(ap, apIndex, accessPoints.filter(a => a.floor === currentFloor)).x}%;
+                                                                                        top: ${calculateAPPosition(ap, apIndex, accessPoints.filter(a => a.floor === currentFloor)).y}%;
+                                                                                        width: 14px;
+                                                                                        height: 14px;
+                                                                                        background: ${ap.status === 'active' ? '#10b981' : ap.status === 'maintenance' ? '#fbbf24' : '#ef4444'};
+                                                                                        border: 2px solid white;
+                                                                                        box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 0 1px ${ap.status === 'active' ? '#10b981' : ap.status === 'maintenance' ? '#fbbf24' : '#ef4444'};
+                                                                                        transform: translate(-50%, -50%);
+                                                                                        animation: ${ap.status === 'active' ? 'pulse 2s infinite' : 'none'};
+                                                                                    `"
                             :title="`${ap.name} (${ap.status})`"
                             onmouseover="this.style.transform='translate(-50%, -50%) scale(1.8)'"
                             onmouseout="this.style.transform='translate(-50%, -50%) scale(1)'">
@@ -494,35 +453,6 @@
                     <div class="mb-4 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
                         <strong class="text-gray-800" x-text="selectedAP.name"></strong><br>
                         Status saat ini: <span class="font-medium" x-text="selectedAP.status"></span>
-                    </div>
-
-                    <!-- Pilih Teknisi -->
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Pilih Teknisi <span class="text-red-500">*</span>
-                        </label>
-
-                        <!-- Loading State -->
-                        <div x-show="loadingTechnicians"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 text-sm">
-                            Memuat teknisi...
-                        </div>
-
-                        <!-- Select Dropdown -->
-                        <select x-show="!loadingTechnicians" x-model="selectedTechnician"
-                            style="color: #111827 !important; background-color: white !important;"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition">
-                            <option value="" style="color: #6b7280 !important;">-- Pilih Teknisi --</option>
-                            <template x-for="tech in technicians" :key="tech.id">
-                                <option :value="tech.id" x-text="tech.name" style="color: #111827 !important;">
-                                </option>
-                            </template>
-                        </select>
-
-                        <p class="text-xs text-gray-500 mt-1"
-                            x-show="!loadingTechnicians && technicians.length === 0">
-                            Belum ada teknisi yang terdaftar dalam sistem
-                        </p>
                     </div>
 
                     <!-- Deskripsi Masalah -->

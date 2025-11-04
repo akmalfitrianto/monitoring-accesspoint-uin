@@ -111,7 +111,6 @@ class MyTicketResource extends Resource
                 Tables\Columns\TextColumn::make('accessPoint.name')->label('Access Point')->default('-'),
                 Tables\Columns\TextColumn::make('floor')->label('Lantai')->sortable(),
                 Tables\Columns\TextColumn::make('reporter.name')->label('Pelapor')->sortable(),
-                Tables\Columns\TextColumn::make('technician.name')->label('Teknisi')->default('-')->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->colors([
@@ -137,14 +136,14 @@ class MyTicketResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
-                    ->visible(fn () => optional(Auth::user())->hasRole(['admin', 'teknisi'])),
+                    ->visible(fn () => optional(Auth::user())->hasRole(['superadmin'])),
 
                 Action::make('set_in_progress')
                     ->label('In Progress')
                     ->icon('heroicon-o-wrench-screwdriver')
                     ->color('warning')
                     ->requiresConfirmation()
-                    ->visible(fn ($record) => in_array($record->status, ['open']) && optional(Auth::user())->hasRole(['admin', 'teknisi']))
+                    ->visible(fn ($record) => in_array($record->status, ['open']) && optional(Auth::user())->hasRole(['superadmin']))
                     ->action(fn ($record) => $record->update(['status' => 'in_progress'])),
 
                 Action::make('set_resolved')
@@ -152,7 +151,7 @@ class MyTicketResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->visible(fn ($record) => in_array($record->status, ['in_progress']) && optional(Auth::user())->hasRole(['admin', 'teknisi']))
+                    ->visible(fn ($record) => in_array($record->status, ['in_progress']) && optional(Auth::user())->hasRole(['superadmin']))
                     ->action(fn ($record) => $record->update([
                         'status' => 'resolved',
                         'resolved_at' => now(),
@@ -163,7 +162,7 @@ class MyTicketResource extends Resource
                     ->icon('heroicon-o-x-circle')
                     ->color('gray')
                     ->requiresConfirmation()
-                    ->visible(fn ($record) => in_array($record->status, ['resolved']) && optional(Auth::user())->hasRole(['admin', 'teknisi']))
+                    ->visible(fn ($record) => in_array($record->status, ['resolved']) && optional(Auth::user())->hasRole(['superadmin']))
                     ->action(fn ($record) => $record->update(['status' => 'closed'])),
             ])
             ->bulkActions([
@@ -198,6 +197,7 @@ class MyTicketResource extends Resource
 
         if(!$user) return false;
 
-        return $user->HasAnyRole(['user', 'admin', 'teknisi']);
+        return $user->HasAnyRole(['superadmin', 'admin']);
     }
+
 }

@@ -18,6 +18,8 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Notifications\Livewire\DatabaseNotifications;
+use App\Filament\Widgets\NotificationBellWidget;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -28,6 +30,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->databaseNotifications()
+            ->spa()
             ->homeUrl('/admin/dashboard')
             ->brandLogo(asset('images/Logo-UIN-Antasari-Banjarmasin.png'))
             ->brandLogoHeight('3.5rem')
