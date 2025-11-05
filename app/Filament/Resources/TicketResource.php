@@ -128,6 +128,9 @@ class TicketResource extends Resource
                 Tables\Columns\TextColumn::make('building.name')
                     ->label('Gedung')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('room.name')
+                    ->label('Ruangan')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('accessPoint.name')
                     ->label('Access Point')
                     ->searchable(),

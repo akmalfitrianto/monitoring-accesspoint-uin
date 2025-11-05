@@ -104,6 +104,7 @@ class MyTicketResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('title')->label('Judul')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('building.name')->label('Gedung')->sortable(),
@@ -173,14 +174,22 @@ class MyTicketResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $user = filament()->auth()->user();
+        $user = auth()->user();
 
-        if($user && $user->hasRole('user')){
+        if(!$user){
+            return parent::getEloquentQuery()->whereRaw('1 = 0');
+        }
+
+        if ($user->hasRole('superadmin')){
+            return parent::getEloquentQuery();
+        }
+
+        if ($user->hasRole('admin')){
             return parent::getEloquentQuery()
                 ->where('reported_by', $user->id);
         }
 
-        return parent::getEloquentQuery();
+        return parent::getEloquentQuery()->whereRaw('1 = 0');
     }
 
     public static function getPages(): array

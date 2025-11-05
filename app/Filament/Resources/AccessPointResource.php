@@ -130,8 +130,8 @@ class AccessPointResource extends Resource
                 Tables\Columns\TextColumn::make('floor')->label('Lantai')->sortable(),
                 Tables\Columns\TextColumn::make('room.name')->label('Ruangan')->searchable(),
                 Tables\Columns\TextColumn::make('status')->label('Status'),
-                Tables\Columns\TextColumn::make('x_position')->label('X'),
-                Tables\Columns\TextColumn::make('y_position')->label('Y'),
+                Tables\Columns\TextColumn::make('x_position')->label('X')->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('y_position')->label('Y')->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')

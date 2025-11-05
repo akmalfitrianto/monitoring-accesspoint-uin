@@ -89,10 +89,10 @@ class BuildingResource extends Resource
                 Tables\Columns\TextColumn::make('name')->label('Nama Gedung')->searchable(),
                 Tables\Columns\TextColumn::make('code')->label('Kode Gedung'),
                 Tables\Columns\TextColumn::make('total_floors')->label('Total Lantai'),
-                Tables\Columns\TextColumn::make('grid_width')->label('Lebar'),
-                Tables\Columns\TextColumn::make('grid_height')->label('Tinggi'),
-                Tables\Columns\TextColumn::make('x_position')->label('X'),
-                Tables\Columns\TextColumn::make('y_position')->label('Y'),
+                Tables\Columns\TextColumn::make('grid_width')->label('Lebar')->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('grid_height')->label('Tinggi')->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('x_position')->label('X')->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('y_position')->label('Y')->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('access_points_count')
                     ->label('Jumlah AP')
                     ->counts('accessPoints'),

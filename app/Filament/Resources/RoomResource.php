@@ -98,13 +98,17 @@ class RoomResource extends Resource
                 Tables\Columns\TextColumn::make('code')
                     ->label('Kode'),
                 Tables\Columns\TextColumn::make('x_position')
-                    ->label('X'),
+                    ->label('X')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('y_position')
-                    ->label('Y'),
+                    ->label('Y')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('width')
-                    ->label('Lebar'),
+                    ->label('Lebar')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('height')
-                    ->label('Tinggi'),
+                    ->label('Tinggi')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('building_id')
