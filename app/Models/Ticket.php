@@ -150,7 +150,7 @@ class Ticket extends Model
 
             foreach ($superAdmins as $user) {
                 $user->notify(new TicketNotification(
-                    title: 'Tiket Baru Dibuat',
+                    title: 'Tiket Berhasil Dibuat',
                     body: "{$ticket->reporter->name} membuat tiket baru: '{$ticket->title}'.",
                     type: 'info'
                 ));

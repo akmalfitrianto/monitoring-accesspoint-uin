@@ -225,11 +225,6 @@
                             ">
                         </div>
 
-                        {{-- Grid Pattern untuk referensi visual --}}
-                        {{-- <div class="absolute inset-0"
-                            style="background-image: linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px); background-size: 50px 50px; opacity: 0.5;">
-                        </div> --}}
-
                         {{-- Info panel kiri atas --}}
                         <div class="absolute top-4 left-4 rounded-lg text-xs shadow-md"
                             style="background: rgba(255,255,255,0.95); padding: 12px; color: #374151;">
@@ -316,16 +311,16 @@
             <template x-for="floor in floors" :key="floor">
                 <button x-on:click="currentFloor = floor"
                     :style="`
-                                                                            width: 8px;
-                                                                            height: 8px;
-                                                                            border-radius: 50%;
-                                                                            border: none;
-                                                                            cursor: pointer;
-                                                                            padding: 0;
-                                                                            margin: 0 4px;
-                                                                            background: ${currentFloor === floor ? '#019486' : '#d1d5db'};
-                                                                            transition: all 0.2s;
-                                                                        `"
+                        width: 8px;
+                        height: 8px;
+                        border-radius: 50%;
+                        border: none;
+                        cursor: pointer;
+                        padding: 0;
+                        margin: 0 4px;
+                        background: ${currentFloor === floor ? '#019486' : '#d1d5db'};
+                        transition: all 0.2s;
+                    `"
                     onmouseover="this.style.transform='scale(1.3)'"
                     onmouseout="this.style.transform='scale(1)'"></button>
             </template>
@@ -402,17 +397,17 @@
                 <template x-for="room in rooms.filter(r => r.floor === currentFloor)" :key="room.id">
                     <div class="absolute flex items-center justify-center rounded shadow-md transition-all cursor-pointer"
                         :style="`
-                                                                                                    left: ${room.x_position}%;
-                                                                                                    top: ${room.y_position}%;
-                                                                                                    width: ${room.width}px;
-                                                                                                    height: ${room.height}px;
-                                                                                                    background: #93c5fd;
-                                                                                                    border: 2px solid #2563eb;
-                                                                                                    color: #1e3a8a;
-                                                                                                    font-size: 11px;
-                                                                                                    font-weight: 700;
-                                                                                                    transform: translate(-50%, -50%);
-                                                                                                `"
+                            left: ${room.x_position}%;
+                            top: ${room.y_position}%;
+                            width: ${room.width}px;
+                            height: ${room.height}px;
+                            background: #93c5fd;
+                            border: 2px solid #2563eb;
+                            color: #1e3a8a;
+                            font-size: 11px;
+                            font-weight: 700;
+                            transform: translate(-50%, -50%);
+                        `"
                         :title="room.name" x-text="room.code"
                         onmouseover="this.style.transform='translate(-50%, -50%) scale(1.05)'; this.style.boxShadow='0 10px 15px rgba(0,0,0,0.3)'"
                         onmouseout="this.style.transform='translate(-50%, -50%) scale(1)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'">
@@ -426,16 +421,16 @@
                         <div class="absolute rounded-full cursor-pointer transition-transform"
                             x-on:click="openReportModal(ap)"
                             :style="`
-                                                                                                                    left: ${calculateAPPosition(ap, apIndex, accessPoints.filter(a => a.floor === currentFloor)).x}%;
-                                                                                                                    top: ${calculateAPPosition(ap, apIndex, accessPoints.filter(a => a.floor === currentFloor)).y}%;
-                                                                                                                    width: 14px;
-                                                                                                                    height: 14px;
-                                                                                                                    background: ${ap.status === 'active' ? '#10b981' : ap.status === 'maintenance' ? '#fbbf24' : '#ef4444'};
-                                                                                                                    border: 2px solid white;
-                                                                                                                    box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 0 1px ${ap.status === 'active' ? '#10b981' : ap.status === 'maintenance' ? '#fbbf24' : '#ef4444'};
-                                                                                                                    transform: translate(-50%, -50%);
-                                                                                                                    animation: ${ap.status === 'active' ? 'pulse 2s infinite' : 'none'};
-                                                                                                                `"
+                                left: ${calculateAPPosition(ap, apIndex, accessPoints.filter(a => a.floor === currentFloor)).x}%;
+                                top: ${calculateAPPosition(ap, apIndex, accessPoints.filter(a => a.floor === currentFloor)).y}%;
+                                width: 14px;
+                                height: 14px;
+                                background: ${ap.status === 'active' ? '#10b981' : ap.status === 'maintenance' ? '#fbbf24' : '#ef4444'};
+                                border: 2px solid white;
+                                box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 0 1px ${ap.status === 'active' ? '#10b981' : ap.status === 'maintenance' ? '#fbbf24' : '#ef4444'};
+                                transform: translate(-50%, -50%);
+                                animation: ${ap.status === 'active' ? 'pulse 2s infinite' : 'none'};
+                            `"
                             :title="`${ap.name} (${ap.status})`"
                             onmouseover="this.style.transform='translate(-50%, -50%) scale(1.8)'"
                             onmouseout="this.style.transform='translate(-50%, -50%) scale(1)'">

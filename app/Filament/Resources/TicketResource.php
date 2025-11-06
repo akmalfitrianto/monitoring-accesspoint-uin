@@ -15,6 +15,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -65,13 +66,13 @@ class TicketResource extends Resource
                             ->reactive()
                             ->searchable()
                             ->preload(),
-                        
+
                         Forms\Components\Select::make('room_id')
                             ->label('Ruangan')
-                            ->options(function(callable $get) {
+                            ->options(function (callable $get) {
                                 $buildingId = $get('building_id');
-                                if(!$buildingId) {
-                                    return[];
+                                if (!$buildingId) {
+                                    return [];
                                 }
                                 return Room::where('building_id', $buildingId)
                                     ->pluck('name', 'id');
@@ -81,10 +82,10 @@ class TicketResource extends Resource
 
                         Forms\Components\Select::make('access_point_id')
                             ->label('Access Point')
-                            ->options(function(callable $get){
+                            ->options(function (callable $get) {
                                 $roomId = $get('room_id');
-                                if(!$roomId) {
-                                    return[];
+                                if (!$roomId) {
+                                    return [];
                                 }
                                 return AccessPoint::where('room_id', $roomId)
                                     ->pluck('name', 'id');
@@ -146,7 +147,7 @@ class TicketResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                 Tables\Filters\SelectFilter::make('status')
+                Tables\Filters\SelectFilter::make('status')
                     ->options([
                         'open' => 'Open',
                         'in_progress' => 'In Progress',
@@ -163,17 +164,16 @@ class TicketResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn () => optional(Auth::user())->hasRole('superadmin')),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
     }
 
-    public static function getRelations(): array
+    public static function getNavigationBadge(): ?string
     {
-        return [
-            //
-        ];
+        return static::getModel()::where('status', 'open')->count();
     }
 
     public static function getPages(): array
@@ -186,6 +186,11 @@ class TicketResource extends Resource
         ];
     }
 
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
     public static function shouldRegisterNavigation(): bool
     {
         $user = auth()->user();
@@ -194,5 +199,4 @@ class TicketResource extends Resource
 
         return $user->hasRole(['superadmin']);
     }
-
 }

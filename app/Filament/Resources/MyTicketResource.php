@@ -169,7 +169,7 @@ class MyTicketResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make()
-                    ->visible(fn () => optional(Auth::user())->hasRole('admin')),
+                    ->visible(fn () => optional(Auth::user())->hasRole('superadmin')),
             ]);
     }
 
@@ -199,6 +199,11 @@ class MyTicketResource extends Resource
             'index' => Pages\ListMyTickets::route('/'),
             'create' => Pages\CreateMyTicket::route('/create'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
     }
     
     public static function shouldRegisterNavigation(): bool

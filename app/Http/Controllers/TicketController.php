@@ -19,6 +19,7 @@ class TicketController extends Controller
         ]);
 
         $ap = \App\Models\AccessPoint::find($validated['access_point_id']);
+        // $room = \App\Models\Room::find($validated['room_id']);
         $ap->update(['status' => 'maintenance']);
 
         $ticket = Ticket::create([

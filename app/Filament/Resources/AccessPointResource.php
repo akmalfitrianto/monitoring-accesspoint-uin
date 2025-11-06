@@ -8,6 +8,8 @@ use App\Models\AccessPoint;
 use App\Models\Building;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Set;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -36,10 +38,15 @@ class AccessPointResource extends Resource
                             ->required()
                             ->preload()
                             ->searchable()
-                            ->reactive(),
+                            ->live()
+                            ->afterStateUpdated(function (Set $set) {
+                                $set('floor', null);
+                                $set('room_id', null);
+                            }),
                         Forms\Components\Select::make('floor')
                             ->label('Lantai')
-                            ->options(function (callable $get) {
+                            ->disabled(fn (Get $get) => !$get('building_id'))
+                            ->options(function (Get $get) {
                                 $buildingId = $get('building_id');
                                 if (!$buildingId) {
                                     return [];
@@ -54,10 +61,12 @@ class AccessPointResource extends Resource
                                     ->mapWithKeys(fn ($i) => [$i => "Lantai {$i}"]);
                             })
                             ->required()
-                            ->reactive(),
+                            ->live()
+                            ->afterStateUpdated(fn (Set $set) => $set('room_id', null)),
                         Forms\Components\Select::make('room_id')
                             ->label('Ruangan')
-                            ->options(function (callable $get) {
+                            ->disabled(fn (Get $get) => !$get('building_id') || !$get('floor'))
+                            ->options(function (Get $get) {
                                 $buildingId = $get('building_id');
                                 $floor = $get('floor');
 
@@ -69,7 +78,6 @@ class AccessPointResource extends Resource
                                     ->pluck('name','id');
                             })
                             ->required()
-                            ->reactive()
                             ->searchable(),
                     ])
                     ->columns(3),
