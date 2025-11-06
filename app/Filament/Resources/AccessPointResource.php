@@ -21,6 +21,8 @@ class AccessPointResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-wifi';
     protected static ?string $navigationLabel = 'Access Point';
     protected static ?string $navigationGroup = 'Manajemen Jaringan';
+    protected static ?int $navigationSort = 4;
+
 
     public static function form(Form $form): Form
     {

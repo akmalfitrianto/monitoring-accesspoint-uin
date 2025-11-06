@@ -25,7 +25,7 @@ class TicketResource extends Resource
     protected static ?string $navigationLabel = 'All Ticketing';
     protected static ?string $navigationGroup = 'Ticketing';
     protected static ?string $navigationIcon = 'heroicon-o-ticket';
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {

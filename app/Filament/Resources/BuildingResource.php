@@ -20,6 +20,7 @@ class BuildingResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-building-office';
     protected static ?string $navigationLabel = 'Gedung';
     protected static ?string $navigationGroup = 'Manajemen Jaringan';
+    protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
     {
