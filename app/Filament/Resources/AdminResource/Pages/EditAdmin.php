@@ -48,7 +48,11 @@ class EditAdmin extends EditRecord
     protected function afterSave(): void
     {
         if ($this->savedRoleId){
-            $this->record->syncRoles([$this->savedRoleId]);
+            $role = \Spatie\Permission\Models\Role::find($this->savedRoleId);
+
+            if ($role) {
+                $this->record->syncRoles([$role]);
+            }
         }
     }
 

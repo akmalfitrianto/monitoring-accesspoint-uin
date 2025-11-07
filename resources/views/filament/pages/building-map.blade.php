@@ -212,12 +212,12 @@
 
                     {{-- Main Canvas --}}
                     <div class="relative border-4 rounded-xl shadow-2xl overflow-hidden"
-                        style="width: 100%; max-width: 1200px; height: 700px; border-color: #d1d5db; background: #ffffff;">
+                        style="width: 100%; max-width: 1200px; height: 900px; border-color: #d1d5db; background: #ffffff;">
 
                         {{-- BACKGROUND IMAGE JALAN --}}
                         <div class="absolute inset-0"
                             style="
-                                background-image: url('{{ asset('images/road-layout.svg') }}');
+                                background-image: url('{{ asset('images/road_layout_1200x900.svg') }}');
                                 background-size: contain;
                                 background-repeat: no-repeat;
                                 background-position: center;
@@ -348,9 +348,9 @@
                 </button>
 
                 {{-- Grid Pattern --}}
-                <div class="absolute inset-0"
+                {{-- <div class="absolute inset-0"
                     style="background-image: linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px); background-size: 30px 30px; opacity: 0.3;">
-                </div>
+                </div> --}}
 
                 {{-- Info panel --}}
                 <div x-show="showInfoPanel" class="absolute rounded-lg shadow-lg z-10"

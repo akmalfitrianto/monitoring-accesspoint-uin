@@ -30,8 +30,11 @@ class CreateAdmin extends CreateRecord
     protected function afterCreate(): void
     {
         if ($this->savedRoleId) {
-            // syncRoles otomatis handle string atau array
-            $this->record->assignRole($this->savedRoleId);
+            $role = \Spatie\Permission\Models\Role::find($this->savedRoleId);
+
+            if ($role) {
+                $this->record->assignRole($role);
+            }
         }
     }   
 
